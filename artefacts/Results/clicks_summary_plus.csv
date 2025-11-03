@@ -1,0 +1,6 @@
+algo,consent_comparable,consent_improved,consent_worse,consent_same,consent_disconnected,consent_newly_connected,total_comparable,total_improved,total_worse,total_same,total_disconnected,total_newly_connected
+Remove Random Edge,0,0,0,0,15,0,0,0,0,0,15,0
+Remove First Edge,0,0,0,0,15,0,0,0,0,0,15,0
+Remove Min-Cut,2,0,0,2,13,0,2,0,0,2,13,0
+Remove MinMC,2,0,0,2,13,0,2,0,0,2,13,0
+Brute Force,1,0,0,1,14,0,1,0,0,1,14,0

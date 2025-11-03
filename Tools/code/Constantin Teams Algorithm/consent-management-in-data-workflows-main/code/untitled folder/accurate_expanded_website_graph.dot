@@ -1,0 +1,130 @@
+digraph AccurateExpandedWebsiteGraph {
+    rankdir=LR;
+    node [shape=box, style=filled, fontname="Arial"];
+
+    // Input: Cookie/Subcookie Types
+    subgraph cluster_cookies {
+        label="Cookie & Subcookie Types";
+        style=filled;
+        color=gold;
+        EssentialCookies [label="Essential Cookies", fillcolor=lightyellow];
+        AnalyticsCookies [label="Analytics Cookies", fillcolor=lightyellow];
+        FunctionalCookies [label="Functional Cookies", fillcolor=lightyellow];
+        AllCookies [label="All Cookies", fillcolor=yellow, penwidth=2, color=red];
+    }
+
+    // Middle: Website Features and Sub-Features
+    subgraph cluster_features {
+        label="Website Features & Sub-Features";
+        style=filled;
+        color=lightblue;
+        LoginPage [label="Login Page (login.php)", fillcolor=lightblue];
+        SessionStart [label="Session Start", fillcolor=lightblue];
+        CookieConsent [label="Cookie Consent (Klaro)", fillcolor=lightgreen];
+        Dashboard [label="Dashboard/Profile", fillcolor=lightgreen];
+        SearchForm [label="Book Search Form (search.php)", fillcolor=lightgreen];
+        QueryExecution [label="Book Query Execution", fillcolor=lightgreen];
+        ResultDisplay [label="Book Result Display", fillcolor=lightgreen];
+        BookDownload [label="Book Download", fillcolor=lightgreen];
+        CategorySearch [label="Category Search (category-search.php)", fillcolor=lightgreen];
+        AudiobookSearch [label="Audiobook Search (search-audiobooks.php)", fillcolor=lightgreen];
+        AudiobookResult [label="Audiobook Result Display", fillcolor=lightgreen];
+        AudiobookDownload [label="Audiobook Download", fillcolor=lightgreen];
+        MembershipPage [label="Membership Page", fillcolor=lightgreen];
+        MembershipFeatures [label="Membership Features", fillcolor=lightgreen];
+        DigitalMagazinePage [label="Digital Magazine Page", fillcolor=lightgreen];
+        MagazineView [label="Magazine View", fillcolor=lightgreen];
+        FeedbackPage [label="Feedback Page", fillcolor=lightgreen];
+        FeedbackSubmit [label="Feedback Submit", fillcolor=lightgreen];
+        ContactPage [label="Contact Us Page", fillcolor=lightgreen];
+        ContactSubmit [label="Contact Submit", fillcolor=lightgreen];
+        HomePage [label="Open Library Home", fillcolor=lightblue];
+        DiscoverPage [label="Discover the Best", fillcolor=lightblue];
+        SearchResults [label="Search Results (search-results.php)", fillcolor=lightgreen];
+    }
+
+    // Output: Goals
+    subgraph cluster_goals {
+        label="Goals (Purposes)";
+        style=filled;
+        color=orange;
+        DownloadBook [label="Download Book", fillcolor=orange];
+        DownloadAudiobook [label="Download Audiobook", fillcolor=orange];
+        SendFeedback [label="Send Feedback", fillcolor=orange];
+        Contact [label="Contact Us (Message/Email)", fillcolor=orange];
+        AccessMagazine [label="Access Magazine", fillcolor=orange];
+    }
+
+    // Cookie to feature gating
+    EssentialCookies -> CookieConsent;
+    EssentialCookies -> LoginPage;
+    EssentialCookies -> SearchForm;
+    EssentialCookies -> ContactPage;
+    EssentialCookies -> FeedbackPage;
+    AnalyticsCookies -> MembershipPage;
+    AnalyticsCookies -> MembershipFeatures;
+    FunctionalCookies -> DigitalMagazinePage;
+    FunctionalCookies -> MagazineView;
+    FunctionalCookies -> AudiobookSearch;
+    FunctionalCookies -> AudiobookResult;
+    FunctionalCookies -> AudiobookDownload;
+    AllCookies -> LoginPage;
+    AllCookies -> Dashboard;
+    AllCookies -> SearchForm;
+    AllCookies -> QueryExecution;
+    AllCookies -> ResultDisplay;
+    AllCookies -> BookDownload;
+    AllCookies -> CategorySearch;
+    AllCookies -> AudiobookSearch;
+    AllCookies -> AudiobookResult;
+    AllCookies -> AudiobookDownload;
+    AllCookies -> MembershipPage;
+    AllCookies -> MembershipFeatures;
+    AllCookies -> DigitalMagazinePage;
+    AllCookies -> MagazineView;
+    AllCookies -> FeedbackPage;
+    AllCookies -> FeedbackSubmit;
+    AllCookies -> ContactPage;
+    AllCookies -> ContactSubmit;
+    AllCookies -> HomePage;
+    AllCookies -> DiscoverPage;
+    AllCookies -> SearchResults;
+
+    // Feature flows
+    CookieConsent -> LoginPage;
+    LoginPage -> SessionStart;
+    SessionStart -> Dashboard;
+    Dashboard -> SearchForm;
+    SearchForm -> QueryExecution;
+    QueryExecution -> ResultDisplay;
+    ResultDisplay -> BookDownload;
+    BookDownload -> DownloadBook;
+    SearchForm -> CategorySearch;
+    CategorySearch -> SearchResults;
+    SearchResults -> BookDownload;
+    SearchResults -> AudiobookResult;
+    AudiobookSearch -> AudiobookResult;
+    AudiobookResult -> AudiobookDownload;
+    AudiobookDownload -> DownloadAudiobook;
+    Dashboard -> MembershipPage;
+    MembershipPage -> MembershipFeatures;
+    MembershipFeatures -> BookDownload;
+    MembershipFeatures -> MagazineView;
+    DigitalMagazinePage -> MagazineView;
+    MagazineView -> AccessMagazine;
+    Dashboard -> FeedbackPage;
+    FeedbackPage -> FeedbackSubmit;
+    FeedbackSubmit -> SendFeedback;
+    Dashboard -> ContactPage;
+    ContactPage -> ContactSubmit;
+    ContactSubmit -> Contact;
+    HomePage -> DiscoverPage;
+    DiscoverPage -> SearchForm;
+
+    // Direct AllCookies to all goals (fastest path)
+    AllCookies -> DownloadBook [color=red, style=dashed, penwidth=2];
+    AllCookies -> DownloadAudiobook [color=red, style=dashed, penwidth=2];
+    AllCookies -> SendFeedback [color=red, style=dashed, penwidth=2];
+    AllCookies -> Contact [color=red, style=dashed, penwidth=2];
+    AllCookies -> AccessMagazine [color=red, style=dashed, penwidth=2];
+}

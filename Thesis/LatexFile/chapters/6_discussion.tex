@@ -1,0 +1,67 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+
+
+
+\chapter{Discussion}
+\label{chapter:discussion}
+
+This chapter interprets the empirical results and reflects on what they mean for consent–flow design. We focus on three graph versions—\textbf{G0} (baseline), \textbf{G1} (``Quick‐Consent'' UI streamlining), and \textbf{G1b} (Quick‐Consent plus auto–apply and implicit first use). We also discuss the five main pruning algorithms evaluated on \textbf{G0}: Remove First Edge, Remove Random Edge,
+Brute Force,
+Remove Min–Cut, Remove MinMC. Throughout, ``consent clicks'' count only edges explicitly labelled as user interactions related to saving/acceptance, while ``total clicks'' count all interaction edges on the shortest path. 
+
+At a high level, three observations stand out:
+
+\begin{itemize}
+  \item Pure structure–only pruning on \textbf{G0} did not shorten user paths to any measured outcomes; it often disconnected start$\to$outcome pairs.
+  %(see Table~\ref{tab:algo-summary-main}) 
+  \item Quick–Consent (\textbf{G1}) shortened navigation to content outcomes in many cases (we observed $\Delta$total $< 0$ in 36 comparisons), but it did not reduce the number of explicit consent clicks ($\Delta$consent $=0$ across those comparisons).
+  \item When we added semantics—auto–apply and implicit first use—in \textbf{G1b}, consent effort dropped materially: \textbf{13/15} start$\to$ConsentSaved pairs improved on consent clicks, and \textbf{9/15} improved on total clicks.
+%(cf.\ the detailed CSV comparisons).
+\end{itemize}
+
+The main goal of this thesis was to see whether graph-based models can be used to shorten cookie consent paths while still preserving user privacy.
+
+The rest of this chapter unpacks these points, followed by limitations, threats to validity, and future work.
+
+
+\section{Limitations}
+This work has several limitations. First, the graph used in this study is a simplified model of the website interface. In reality, user behavior is much more complex. For example, users may scroll, go back to the previous page, or even close the browser in the middle of a task. These actions are not captured in the graph.  
+
+Second, all clicks were counted as equal. In practice, some clicks are harder or more time-consuming than others. For instance, opening a modal or finding the Save button might be more effortful than toggling a simple switch.  
+
+Third, all results were obtained from a single demo site. Results might differ on other websites with different designs or stricter consent policies. 
+Therefore, the generalizability of these findings is limited. The results may vary depending on the website’s structure, consent flow design, and regulatory context.
+
+Fourth, no real users were involved in this study. We only used synthetic data and predefined paths. Therefore, it is still unclear whether real users would experience the same improvements.  
+
+\section{Threats to Validity}
+One threat is that the main metric, the number of clicks, may not fully represent the real user experience. User experience cannot be captured by counting clicks alone. For example, users might spend more time reading a consent text or get confused, even if the number of clicks is low.  
+
+Another threat is that the choice of paths and outcomes strongly affected the results. If different start or end points had been chosen, the results could have been different.  
+
+There is also the issue of generalization. Since this study was conducted on a limited demo site, applying the results to other websites is risky.  
+
+Finally, small numerical differences may not be meaningful. I focused more on overall patterns (such as the fact that G1b reduced consent clicks in almost all start nodes) to avoid drawing conclusions from minor fluctuations.  
+
+\section{Evaluation}
+%If I evaluate my own work, I can identify three main findings.  
+In  evaluating  this work, we can identify three main findings.
+
+First, when we only removed edges (G0), paths did not get shorter, and in some cases they were even broken. This shows that simple structural pruning is not a good solution for reducing clicks.  
+
+Second, in G1 (Quick Consent), adding UI shortcuts made the navigation easier and shortened many paths in terms of total clicks. However, since users still had to press Save, the number of consent clicks did not change.  
+
+Third, in G1b, when the meaning of clicks was changed (with auto-apply and implicit-first-use), the number of consent clicks was reduced. This made the paths shorter and the user experience smoother. But there is also a downside: user control and security are weaker. A user may not want all sub-cookies to be enabled, yet with the first use or a simple toggle, full consent might be stored.  
+
+Therefore, G1b gave the best results in terms of usability, but at the cost of potentially reducing privacy. This shows that reducing clicks does not always mean improving privacy. Sometimes, more convenience comes at the expense of losing part of the user’s control.  
+
+  
+
+ 
+
+%\bigskip
+%\noindent
+\section{Summary}
+ Overall, the results showed that simply pruning edges does not help, while changing the semantics of clicks leads to real reductions in the number of clicks. However, this may come at the cost of reduced user control. Therefore, good consent design requires balancing ease of use with privacy preservation.  

@@ -1,0 +1,341 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+
+
+\section{Results and Interpretation}
+
+In the following, we report what actually changed in the user graph once we started pruning edges and introducing ``quick consent.'' We present the numbers for the baseline graph (G0), the user interface--only variant (G1), and the auto-apply / implicit-first-use variant (G1b). Throughout, we keep the focus on two quantities that matter for users of the site: (i) consent clicks---how many explicit consent interactions were required---and (ii) total clicks along the path from a start node to a target outcome.
+
+
+
+\subsection{Baseline pruning on \texorpdfstring{\textbf{G0}}{G0}}
+\label{sec:results-g0}
+
+We first ran five \emph{structure-only} edge-removal algorithms on the baseline graph
+(\textbf{G0}, 81 directed edges in total) to see whether pure pruning shortens user
+paths. Table~\ref{tab:g0-main} summarises how many edges each algorithm removed and
+how many start$\to$outcome comparisons got \emph{shorter}. The answer was clear:
+despite removing a non-trivial number of edges, none of the five algorithms reduced
+either consent clicks or total clicks to any outcome.
+
+\begin{table}[H]
+  \centering
+   \caption{Baseline (\textbf{G0}) edge removals and observed improvements for the five main algorithms. The baseline has 81 edges; ``Edges remaining'' is computed accordingly. No click-length improvements were observed.}
+  \label{tab:g0-main}
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabularx}{\linewidth}{l
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X}
+    \toprule
+    \textbf{Algorithm} & \textbf{Edges removed} & \textbf{Edges remaining} & \textbf{Consent improved} & \textbf{Total improved} \\
+    \midrule
+    Remove Random Edge & 25 & 56 & 0 & 0 \\
+    Remove First Edge  & 43 & 38 & 0 & 0 \\
+    Remove Min-Cut     &  2 & 79 & 0 & 0 \\
+    Remove MinMC       &  2 & 79 & 0 & 0 \\
+    Brute Force        &  2 & 79 & 0 & 0 \\
+    \bottomrule
+  \end{tabularx}
+ 
+\end{table}
+
+What did happen is that some algorithms broke connectivity between several
+start nodes and outcomes. Table~\ref{tab:g0-disconnects} reports how many
+start$\to$outcome pairs became disconnected in each case. The two greedy variants
+(Remove First Edge, Remove Random Edge) were the most destructive (59 pairs), while
+the more conservative cuts (Min-Cut, MinMC, Brute Force) disrupted fewer paths.
+
+\begin{table}[H]
+  \centering
+  \caption{Start$\to$outcome pairs that became disconnected after pruning on \textbf{G0}.}
+  \label{tab:g0-disconnects}
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.1}
+  \begin{tabularx}{0.72\linewidth}{l
+      >{\raggedleft\arraybackslash}X}
+    \toprule
+    \textbf{Algorithm} & \textbf{\# disconnected pairs} \\
+    \midrule
+    Remove First Edge  & 59 \\
+    Remove Random Edge & 59 \\
+    Remove Min-Cut     & 15 \\
+    Remove MinMC       & 15 \\
+    Brute Force        & 11 \\
+    \bottomrule
+  \end{tabularx}
+  
+\end{table}
+
+\paragraph{Takeaway.}
+Pure structure pruning on \textbf{G0} neither reduced consent effort nor shortened
+paths; in several cases it simply removed useful routes.
+
+%\newpage
+
+\subsection{UI-only quick consent on \texorpdfstring{\textbf{G1}}{G1}}
+\label{sec:results-g1}
+
+Graph \textbf{G1} introduced a UI-level ``quick consent'' workflow (inline toggles,
+fewer detours), while still requiring an explicit \texttt{Save} to persist consent.
+When we compare \textbf{G1} against \textbf{G0}, we see a practical effect on
+total path length (how many clicks to reach an outcome), but no change in the
+number of consent clicks themselves.
+
+Across the full start$\to$outcome grid (15 starts $\times$ 8 outcomes = 120 pairs),
+\textbf{36} pairs became shorter in total clicks. The improvements were not uniform:
+most of them clustered around navigation that touched the consent UI frequently.
+
+A breakdown by start (from our terminal logs) is summarized in Table~\ref{tab:improved_pairs}.
+
+\begin{table}[H]
+\centering
+\caption{Breakdown of improved start→outcome pairs.}
+\label{tab:improved_pairs}
+\begin{tabular}{l c}
+\hline
+\textbf{Start Node} & \textbf{Improved Pairs} \\
+\hline
+Manage        & 6 \\
+Login         & 5 \\
+Membership    & 4 \\
+DigitalMag    & 4 \\
+Discover      & 4 \\
+Audiobooks    & 4 \\
+SearchBooks   & 4 \\
+Home          & 1 \\
+\hline
+\textbf{Subtotal (main nodes)} & \textbf{32} \\
+\textbf{Additional (minor nodes)} & \textbf{4} \\
+\hline
+\textbf{Total} & \textbf{36} \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+
+(These eight account for 32 of the 36 observed improvements; the remaining four were
+spread across lower-frequency starts and follow the same pattern: slightly shorter
+routes due to fewer UI detours.) Importantly, \emph{consent} clicks did not decrease
+on \textbf{G1}: the workflow still needed an explicit \texttt{Save}, so the consent
+portion of each path stayed the same.
+
+\paragraph{Takeaway.}
+\textbf{G1} made the site feel faster to navigate (fewer total clicks on 36/120
+pairs), but it did not reduce the number of consent interactions. Users still
+had to commit via \texttt{Save}.
+
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Consent clicks to \texttt{ConsentSaved}: \textbf{G0} vs \textbf{G1} (per start). $\Delta$=G1$-$G0.}
+\label{tab:consent-g0-g1}
+\begin{tabular}{lrrr}
+\toprule
+Start & Consent$_{G0}$ & Consent$_{G1}$ & $\Delta$\\
+\midrule
+Audiobooks  & 2 & 2 & 0\\
+ContactUs   & 2 & 2 & 0\\
+DigitalMag  & 2 & 2 & 0\\
+Discover    & 2 & 2 & 0\\
+Home        & 2 & 2 & 0\\
+Login       & 2 & 2 & 0\\
+Membership  & 2 & 2 & 0\\
+SearchBooks & 2 & 2 & 0\\
+BannerToast & 1 & 1 & 0\\
+Entry       & 1 & 1 & 0\\
+LetMeChoose & 1 & 1 & 0\\
+Manage      & 1 & 1 & 0\\
+Modal       & 1 & 1 & 0\\
+AcceptAll   & 0 & 0 & 0\\
+Save        & 0 & 0 & 0\\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Total clicks to \texttt{ConsentSaved}: \textbf{G0} vs \textbf{G1} (per start). $\Delta$=G1$-$G0.}
+\label{tab:total-g0-g1}
+\begin{tabular}{lrrr}
+\toprule
+Start & Total$_{G0}$ & Total$_{G1}$ & $\Delta$\\
+\midrule
+Audiobooks  & 4 & 4 & 0\\
+ContactUs   & 4 & 4 & 0\\
+DigitalMag  & 4 & 4 & 0\\
+Discover    & 4 & 4 & 0\\
+Home        & 4 & 4 & 0\\
+Login       & 4 & 4 & 0\\
+Membership  & 4 & 4 & 0\\
+SearchBooks & 4 & 4 & 0\\
+Manage      & 3 & 3 & 0\\
+BannerToast & 2 & 2 & 0\\
+Entry       & 3 & 3 & 0\\
+LetMeChoose & 3 & 3 & 0\\
+Modal       & 2 & 2 & 0\\
+AcceptAll   & 0 & 0 & 0\\
+Save        & 0 & 0 & 0\\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+\newpage
+\begin{table}[htbp]
+\centering
+\small
+\caption{Overall comparison of \textbf{G1} vs \textbf{G0} on the 15$\times$8 start--outcome grid (120 pairs). Negative deltas indicate fewer clicks on \textbf{G1}.}
+\label{tab:g0-g1-overall}
+\begin{tabular}{lrr}
+\toprule
+Category & Count & Share (\%)\\
+\midrule
+Shorter       & 36 & 30.0\\
+Same          & 69 & 57.5\\
+Longer        &  0 &  0.0\\
+Disconnected  &  0 &  0.0\\
+Reconnected   &  0 &  0.0\\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+
+\subsection{Auto-apply and implicit first use on \texorpdfstring{\textbf{G1b}}{G1b}}
+\label{sec:results-g1b}
+
+Graph \textbf{G1b} added two semantics beyond \textbf{G1}:
+(i)auto-apply on toggle inside the modal (so a single toggle both selects
+and saves, and (ii) implicit first use (the first successful call to a
+service writes consent automatically). These two changes directly target
+consent effort.
+
+Table~\ref{tab:g1b-consent} shows consent clicks to the dedicated outcome
+ConsentSaved from each start node. Compared to \textbf{G0},
+\textbf{13 of 15} starts required fewer consent clicks (two remained the same:
+\textit{AcceptAll} and \textit{Save}, which were already at zero).
+
+
+
+\begin{table}[!htbp]
+  \centering
+   \caption{Consent clicks to ConsentSaved: \textbf{G0} vs \textbf{G1b} (per start). Negative $\Delta$ means fewer consent interactions on \textbf{G1b}.}
+  \label{tab:g1b-consent}
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.1}
+  \begin{tabularx}{\linewidth}{l
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X}
+    \toprule
+    \textbf{Start} & \textbf{Consent$_{G0}$} & \textbf{Consent$_{G1b}$} & \textbf{$\Delta$} \\
+    \midrule
+    Audiobooks   & 2 & 0 & $-2$ \\
+    ContactUs    & 2 & 0 & $-2$ \\
+    DigitalMag   & 2 & 0 & $-2$ \\
+    Discover     & 2 & 0 & $-2$ \\
+    Home         & 2 & 0 & $-2$ \\
+    Login        & 2 & 0 & $-2$ \\
+    Membership   & 2 & 0 & $-2$ \\
+    SearchBooks  & 2 & 0 & $-2$ \\
+    BannerToast  & 1 & 0 & $-1$ \\
+    Entry        & 1 & 0 & $-1$ \\
+    LetMeChoose  & 1 & 0 & $-1$ \\
+    Manage       & 1 & 0 & $-1$ \\
+    Modal        & 1 & 0 & $-1$ \\
+    AcceptAll    & 0 & 0 & $0$  \\
+    Save         & 0 & 0 & $0$  \\
+    \bottomrule
+  \end{tabularx}
+ 
+\end{table}
+
+
+
+
+The total path length to ConsentSaved also improved in the majority of
+starts (Table~\ref{tab:g1b-total}). Nine of the fifteen starts got shorter in total
+clicks---typically by 2 clicks for content pages and by 1 click for Manage.
+
+\begin{table}[t]
+ 
+  \captionsetup{skip=10pt}
+ \caption{Total clicks to \textit{ConsentSaved}: \textbf{G0} vs \textbf{G1b} (per start).}
+  \label{tab:g1b-total}
+  \centering
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.1}
+  \begin{tabularx}{\linewidth}{l
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X
+      >{\raggedleft\arraybackslash}X}
+    \toprule
+    \textbf{Start} & \textbf{Total$_{G0}$} & \textbf{Total$_{G1b}$} & \textbf{$\Delta$} \\
+    \midrule
+    Audiobooks   & 4 & 2 & $-2$ \\
+    ContactUs    & 4 & 2 & $-2$ \\
+    DigitalMag   & 4 & 2 & $-2$ \\
+    Discover     & 4 & 2 & $-2$ \\
+    Home         & 4 & 2 & $-2$ \\
+    Login        & 4 & 2 & $-2$ \\
+    Membership   & 4 & 2 & $-2$ \\
+    SearchBooks  & 4 & 2 & $-2$ \\
+    Manage       & 3 & 2 & $-1$ \\
+    BannerToast  & 2 & 2 & $0$ \\
+    Entry        & 3 & 3 & $0$ \\
+    LetMeChoose  & 3 & 3 & $0$ \\
+    Modal        & 2 & 2 & $0$ \\
+    AcceptAll    & 0 & 0 & $0$ \\
+    Save         & 0 & 0 & $0$ \\
+    \bottomrule
+  \end{tabularx}
+   
+\end{table}
+
+\newpage
+
+Two concrete patterns explain the gains:
+
+\begin{enumerate}
+  \item \textbf{Auto-apply in the modal.} Toggling a purpose (e.g., \texttt{AccAnalytics})
+        both selects and saves consent; this removes the separate \texttt{Save} step and
+        accounts for the $-1$ deltas on Manage and Modal.
+  \item \textbf{Implicit first use.} When a required service (e.g., \texttt{AnalyticsSvc})
+        is used from a content page, the first successful call persists consent without
+        an extra explicit click; this explains the consistent $-2$ deltas from content
+        starts such as Home, Discover, DigitalMag,
+       Audiobooks, SearchBooks, Membership, and ContactUs.
+\end{enumerate}
+
+\paragraph{Takeaway.}
+Unlike \textbf{G0} and \textbf{G1}, the \textbf{G1b} semantics directly cut
+consent effort (13/15 starts) and also shorten the overall journey to ``consent
+saved'' (9/15 starts), while keeping the user in control (toggles still require an
+intentional action).
+
+\section{What this means in practice}
+\label{sec:results-interpret}
+
+
+Putting all three graphs together, the comparison reveals distinct behavioral effects across the three configurations. In the structure-only pruning setup (G0 combined with the five edge-removal algorithms), user journeys do not become shorter; instead, several routes are at risk of being broken—up to 59 start→outcome pairs become disconnected—without delivering any measurable click-length benefit. In contrast, the G1 configuration introduces UI-level quick consent, which improves navigation efficiency, resulting in 36 out of 120 start→outcome pairs becoming shorter in total clicks. However, this optimization leaves the consent effort unchanged, as an explicit Save action is still required to finalize the choice. Finally, the G1b variant, which combines auto-apply and implicit-first-use semantics, materially reduces the number of consent interactions (13 out of 15 starts) and often shortens the entire path toward persisting consent (9 out of 15 starts), with the largest improvements observed in content pages that previously required a detour into the modal. In short, if the goal is to respect privacy while minimizing click cost, semantics matter more than aggressive pruning: changing what a click does (apply on toggle; persist on first use) proves far more effective than merely deleting edges.
+
+
+
+
+
+
+
+

@@ -1,0 +1,223 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+
+\chapter{Related Work}
+\label{chapter:relatedwork}
+
+%1. Introduction: The Evolution of Consent in Web Systems
+The management of user consent for cookies and personal data has emerged as a central challenge in the design of modern web systems. As the internet has evolved from a static information repository to a dynamic, interactive platform, the collection and processing of user data have become ubiquitous. Early web applications provided little transparency or control over data collection, and user consent was often implicit or overlooked entirely~\cite{kristol2001http}.\\
+The proliferation of cookies and third-party tracking technologies in the late 1990s and early 2000s highlighted the need for robust mechanisms to inform users and obtain their consent~\cite{Mayer2012, Englehardt2016}. This historical context set the stage for a series of regulatory and technical developments that continue to shape the landscape of consent management.
+\\
+This review proceeds from legal and empirical foundations to technical tracking ecosystems, then to graph-theoretic models, culminating in algorithmic approaches that inform our contribution.
+\\ \\
+%2. Legal Frameworks: GDPR, ePrivacy, and the Rise of Consent
+The introduction of comprehensive legal frameworks, most notably the General Data Protection Regulation (GDPR)\cite{GDPR} and the ePrivacy Directive\cite{ePrivacy}, marked a watershed moment for user privacy and consent. These regulations established explicit requirements for informed, specific, and freely given consent prior to data collection or processing. They also mandated transparency, data minimization, and the right to withdraw consent at any time. The impact of these frameworks has been profound, forcing organizations worldwide to rethink their data practices and invest in compliance infrastructure.
+
+
+Empirical studies have shown that many websites implement consent mechanisms that technically comply with the law but fail to empower users. Degeling et al.\cite{Degeling2019} found that cookie banners often use pre-selected options, ambiguous language, and interface nudges to steer users toward acceptance. Nouwens et al.\cite{Nouwens2020} and Utz et al.~\cite{utz2020cookiebanner} demonstrated that interface design—such as the placement and prominence of “Accept All” versus “Reject All” buttons—can significantly influence user choices, often at the expense of genuine consent.
+\\
+ Representative studies report measurable shifts in user choices under interface changes (e.g., button salience, default states) and increases in erroneous or uninformed consent under complex option layouts, underscoring the need for structural remedies.
+\\ \\
+%3. Consent Management Platforms: Compliance vs. Usability
+In response to regulatory requirements, Consent Management Platforms (CMPs) have become ubiquitous. Commercial solutions like Cookiebot, OneTrust, and Usercentrics, as well as open-source tools such as Klaro!~\cite{Klaro}, offer configurable banners, compliance dashboards, and consent logging. These platforms have enabled organizations to demonstrate compliance and manage user preferences at scale.
+
+Yet, a critical review of related work must go beyond surface features to examine usability and user experience. Habib et al.\cite{Habib2022} found that many CMPs present users with complex, overwhelming interfaces that lead to “consent fatigue.” Matte et al.\cite{Matte2020} and Santos et al.\cite{Santos2021} document systematic violations of GDPR, such as hidden opt-out buttons and confusing defaults.Bielova et al.~\cite{Bielova2021} show that manipulative design patterns—“dark patterns”—are still common, resulting in users granting broad consent with little reflection. These findings highlight a recurring theme: CMPs often prioritize organizational compliance over meaningful user control.
+
+Unlike CMPs that prioritize auditability, logging, and preference storage, prior work rarely optimizes the user’s decision path through banners and settings. Our focus diverges from compliance dashboards toward algorithmic restructuring of the consent journey, reducing effort while preserving transparency.
+\\ \\
+%4. The Complexity of Web Tracking and the Limits of Consent
+Beyond the user interface, the technical landscape of web tracking is increasingly complex. Englehardt and Narayanan~\cite{Englehardt2016} conducted a large-scale study of one million websites, revealing a dense ecosystem of third-party trackers. Acar et al.~\cite{Acar2014} showed that fingerprinting and other persistent tracking techniques can circumvent traditional consent mechanisms, further undermining user autonomy. These studies underscore that consent is not just a matter of interface design but also a structural and technical challenge.
+
+Given the scale and evasiveness of tracking practices, structural models are needed to reason about permissible flows and user-facing constraints beyond interface tweaks.
+
+Despite regulatory and technical advances, few studies propose algorithmic frameworks for simplifying user interaction and consent.
+ The gap here is clear: while much research highlights the risks and shortcomings of current consent mechanisms, there is little work on formal, algorithmic approaches to optimize user decision paths.
+\\ \\
+%5. Graph Theory as a Framework for Consent Modeling
+Graph theory offers a powerful abstraction for modeling relationships, flows, and dependencies in complex systems. It has been widely applied in privacy engineering, from analyzing social networks~\cite{Backstrom2007} to modeling privacy-preserving data flows~\cite{Narayanan2009} and evaluating re-identification risks~\cite{Zhou2008}. These applications demonstrate how graph structures can reveal vulnerabilities, support constraint enforcement, and enable formal reasoning.
+
+However, most graph-based privacy research has focused on backend processes—such as auditing, anonymization, or access control—rather than the front-end user experience. Munir et al.~\cite{munir2023cookiegraph} developed CookieGraph to detect and classify cookie synchronization, addressing surveillance practices but not the usability of consent processes. The opportunity, therefore, lies in reframing consent interactions themselves as graph optimization problems, enabling algorithmic simplification and improved user experience.
+\\ \\
+ Algorithmic Approaches to Consent Flow Optimization relevant work is by Konstantinidis et al.~\cite{DBLP:conf/edbt/FilipczukG023}, who formalized consent management as a graph problem through the Consented Data Workflow (CDW) model. In this framework, data processing pipelines are represented as directed acyclic graphs (DAGs), with edges corresponding to possible data flows and user consent imposing constraints on permissible paths. They introduced a  path-elimination algorithms—RemoveMinCuts, RemoveRandomEdge, RemoveFirstEdge, RemoveMinMC, and BruteForce—each offering different trade-offs between scalability and optimality. While brute force guarantees minimal solutions, it is computationally intractable for large graphs; heuristic methods scale better but may yield suboptimal results. Their work provides a rigorous theoretical foundation but remains largely simulation-based, leaving open questions about real-world performance and usability.
+
+ Where Konstantinidis et al. evaluate path elimination on simulated DAGs, we operationalize these algorithms within an operational web stack (CMS + CMP) and evaluate user-centric metrics (clicks to resolution, time-to-consent, error rate) under interface constraints and legal checks.
+\\ 
+Parallel research has explored alternative models for structuring privacy decisions. Early standards like P3P~\cite{Cranor2002} and EPAL~\cite{Ashley2003} focused on machine-readable policies but neglected user interaction. Later, structured decision-dialog frameworks sought to guide users step-by-step through privacy decisions~\cite{Schaub2015}, improving comprehension but lacking adaptability. In contrast, graph models support dynamic restructuring of user paths, enabling the pruning of redundant branches in ways that decision trees cannot. Work on knowledge graphs and recommender systems~\cite{Zhang2016} shows that eliminating low-utility paths can reduce cognitive load and improve satisfaction, reinforcing the potential of graph-based path elimination for consent systems.
+
+Decision-tree dialogs can improve comprehension but remain largely static; dynamic-consent systems increase flexibility yet demand heavy infrastructure and often user profiling. Graph-based elimination offers a lightweight, transparent middle ground by pruning interaction paths without profiling, preserving privacy while improving efficiency ~\cite{atallah2010erratum}.
+\\
+%7. Dynamic Consent and Adaptive Interfaces
+Dynamic consent has emerged as a response to the limitations of static, one-time consent models. Originally developed in healthcare and genomics, platforms like CTRL~\cite{BudinLjosne2017} and ATHENA~\cite{Kaye2015} allow participants to revisit and adjust their consent over time, emphasizing flexibility and transparency. While these systems demonstrate the value of iterative engagement, they often require heavy infrastructure and are limited to specific domains. To translate these ideas to the web, lightweight dynamic models are needed that restructure interactions without overwhelming users. Studies on adaptive user interfaces suggest that systems that adjust to user behavior can improve trust and usability, but typically rely on machine learning and profiling. In contrast, graph-based elimination provides a transparent, lightweight mechanism for adaptivity: by pruning unlikely or redundant paths, the system can simulate adaptivity without deep behavioral profiling, preserving privacy while enhancing usability \cite{fan2021graph}.
+\\ \\
+%8. Interface Design, Dark Patterns, and the Ethics of Consent
+Research on interface design and dark patterns further underscores the need for structural optimization and showed how subtle design choices can manipulate perceptions of autonomy \cite{accc2019digital}, while Dincelli et al. \cite{DBLP:conf/pacis/DincelliOKUHB25} warned that nudging strategies, though effective, raise ethical concerns. Bielova et al.~\cite{Bielova2021} empirically demonstrated that CMPs continue to exploit deceptive patterns, undermining the legitimacy of consent. These findings highlight the importance of moving beyond interface tweaks to algorithmic restructuring of consent flows. Graph-based methods align with ethical design principles by reducing complexity without resorting to manipulation.
+\\
+%9. Synthesis and Research Gap
+In summary, regulatory and empirical studies that expose usability shortcomings in consent mechanisms, CMP implementations that emphasize compliance but neglect workflow efficiency and graph-theoretic approaches that provide strong theoretical insights but remain untested in operational web contexts. Additional contributions from dynamic consent models, decision tree interfaces, recommender systems, and adaptive UIs highlight the breadth of strategies for improving user decision-making, but none directly address the optimization of cookie consent paths at the interaction layer. The gap, therefore, lies in the absence of approaches that algorithmically restructure consent workflows, simultaneously minimizing user effort, preserving transparency, and ensuring legal compliance.
+
+ We define optimization targets as 
+ (i) reducing the number of clicks needed to reach a valid consent state,
+(ii) shortening the path a user must follow when making consent decisions, and
+(iii) preserving user control and transparency during the graph simplification process.
+ legality is preserved by explicit
+constraints ensuring required notices and granular choices remain available.
+
+
+
+Accordingly, our contribution is the first end-to-end operationalization of graph-based path elimination for cookie consent in an operational CMS,+,CMP stack, demonstrating measurable reductions in user effort while maintaining legal and ethical constraints.
+
+
+
+
+
+
+
+
+
+\\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{State of the Art in Consent Management and Privacy Engineering}
+
+The management of user consent for cookies and personal data has become a critical focus in web development and privacy engineering. Regulatory frameworks such as the General Data Protection Regulation (GDPR) and the ePrivacy Directive~\cite{GDPR,ePrivacy} mandate explicit, informed consent for data collection, reshaping requirements for web applications.
+
+To operationalize these requirements at scale, a broad ecosystem of Consent Management Platforms (CMPs)—both commercial and open-source—provides configurable banners, compliance dashboards, and consent logging. These systems enable organizations to manage preferences and demonstrate legal compliance, yet their design choices strongly shape user outcomes.
+
+Recent empirical work highlights significant shortcomings in prevailing consent mechanisms. Studies show that many CMP implementations employ manipulative or confusing interfaces—e.g., pre-selected options, asymmetric salience of “Accept All” versus “Reject All,” or hidden opt-outs—that nudge users toward broad consent and erode autonomy~\cite{Degeling2019,Nouwens2020,utz2020cookiebanner}. Further evidence documents “consent fatigue,” where complex, repetitive dialogs overwhelm users and degrade decision quality~\cite{Habib2022,Matte2020}.
+
+ 
+Technically, consent management has evolved into a complex, multi-layered infrastructure, involving client-side scripts, third-party services, and backend databases that must remain synchronized to reflect user preferences accurately. 
+
+Large-scale measurements reveal dense third-party ecosystems and complex dependencies between services, showing that user choices made through consent dialogs often have indirect effects that are difficult to trace or control.
+
+In response, researchers have explored formal and algorithmic approaches. Graph-theoretic formulations model interactions, data flows, and consent pathways, enabling analysis and optimization over constrained decision spaces~\cite{DBLP:conf/edbt/FilipczukG023}. For example, the Consented Data Workflow (CDW) frames consent as constraints over directed acyclic graphs, which supports path-elimination strategies aimed at reducing user effort while preserving legality.
+
+Taken together, the state of the art provides (i) robust legal foundations and compliance tooling, (ii) convergent empirical evidence on usability pitfalls and dark patterns, and (iii) formal graph-based tools for constrained optimization. What remains underexplored is an operational evaluation of path-elimination within real web stacks that preserves legal constraints while improving user-centric metrics (e.g., clicks to valid consent and time). This motivates the synthesis and gap analysis that follows and sets the stage for our system model and evaluation.
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+\section{Synthesis, Gap, and Positioning}
+
+\textbf{Synthesis.} The reviewed literature highlights significant progress in the development of consent management systems, regulatory frameworks, and user interface design for privacy and consent. Legal mandates such as the GDPR and ePrivacy Directive have established foundational requirements for explicit, informed consent, prompting the widespread adoption of Consent Management Platforms (CMPs) across the web. Empirical studies, however, consistently reveal that many CMPs prioritize compliance over usability, often employing interface designs that nudge users toward broad consent and contribute to consent fatigue~\cite{Degeling2019, Nouwens2020, Habib2022}.
+
+From a technical perspective, modern consent frameworks operate within increasingly complex ecosystems of third-party services and embedded scripts, which can reduce the transparency and reliability of traditional consent banners~\cite{Englehardt2016, Acar2014}. While some solutions focus on backend privacy enforcement, few address the optimization of user-facing consent flows. Recent advances in graph-based modeling offer promising formal frameworks for representing and analyzing consent interactions, but existing work has largely remained theoretical or simulation-based~\cite{DBLP:conf/edbt/FilipczukG023}.
+\\ \\
+\textbf{Gap.} Despite these advances, a clear research gap persists. Current systems rarely integrate algorithmic optimization with user-centric design to streamline consent interactions, minimize user effort, and enhance transparency. Most notably, there is a lack of practical implementations that leverage graph-based algorithms to restructure consent workflows at the interaction layer, ensuring both legal compliance and improved user experience.
+\\ \\
+\textbf{Positioning.}This thesis positions itself at this intersection, it operationalizes graph elimination algorithms within a real-world content management environment, bridging the gap between theoretical models and practical deployment. By focusing on the optimization of consent paths in user interfaces, this work aims to advance the state of the art in privacy engineering, offering a novel, adaptive, and user-friendly approach to consent management.
+
+

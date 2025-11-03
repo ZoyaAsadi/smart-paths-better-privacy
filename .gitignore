@@ -1,0 +1,14 @@
+.DS_Store
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tar.bz2
+*.dmg
+*.iso
+*.jar
+target/
+build/
+dist/
+out/

@@ -1,0 +1,158 @@
+digraph G0 {
+label="G0 — Removed by Remove Min-Cut";
+graph [rankdir=LR, fontsize=10, labelloc=top, label="Open Library — Consent Graph (G0)"];
+node [shape=box, fontsize=10];
+edge [fontsize=9];
+subgraph cluster_ui {
+label="UI (Klaro banner + modal)";
+style=dashed;
+color=gray50;
+Entry [label="Entry (first visit)"];
+BannerToast [label="Banner (toast)"];
+Modal [label="Privacy settings (modal)"];
+Manage [label="ManageCookies entry"];
+Decline [label="I decline"];
+AcceptSelected [label="Accept selected"];
+AcceptAll [label="Accept all"];
+LetMeChoose [label="Let me choose → modal"];
+ToggleAll [label="Master switch ON/OFF"];
+AccSecurity [label="Accept Security"];
+AccAnalytics [label="Accept Analytics"];
+AccExtMedia [label="Accept External media"];
+AccSupport [label="Accept Support/Chat"];
+AccPayments [label="Accept Payments"];
+AccPersonal [label="Accept Personalization"];
+Save [label="Save (apply selected)"];
+ConsentSaved [label="Consent saved", shape=ellipse, color=gray40];
+}
+subgraph cluster_pages {
+label="Pages (OpenCms — Open Library)";
+style=rounded;
+color=gray50;
+Home [label="Home / Open Library"];
+Discover [label="Discover the Best"];
+SearchBooks [label="Search Books (PHP)"];
+Audiobooks [label="Audiobooks (PHP)"];
+DigitalMag [label="Digital Magazine"];
+Membership [label="Membership"];
+ContactUs [label="Contact Us (PHP)"];
+Login [label="Login"];
+}
+subgraph cluster_services {
+label="Services (non-essential; gated)";
+style=rounded;
+color=gray50;
+Essentials [label="Essential (always required)", penwidth=2];
+SecuritySvc [label="Security  (+2)", penwidth=2];
+AnalyticsSvc [label="Analytics (+2)", penwidth=2];
+ExtMediaSvc [label="External media (+3)", penwidth=2];
+SupportSvc [label="Support/Chat (+2)", penwidth=2];
+PaymentsSvc [label="Payments (+2)", penwidth=2];
+PersonalSvc [label="Personalization (+1)", penwidth=2];
+}
+subgraph cluster_outcomes_a {
+label="Outcomes — Capabilities";
+style=rounded;
+color="#2b8a3e";
+Out_BasicAccess [label="Basic access (essentials only)"];
+Out_AllContent [label="All content unlocked"];
+Out_AllMedia [label="All embedded media playable"];
+Out_Payments [label="Payments enabled"];
+Out_Personalized [label="Personalized recommendations"];
+Out_SecuredLogin [label="Bot-protected login/contact"];
+}
+OutcomeTelemetry [label="Telemetry/Analytics running", color="#2b8a3e", shape=ellipse];
+Entry -> BannerToast [label="show_banner"];
+BannerToast -> Decline [label="click(decline)", color="#999999", style=solid, penwidth=1.2];
+BannerToast -> AcceptSelected [label="click(accept_selected)", color="#999999", style=solid, penwidth=1.2];
+BannerToast -> AcceptAll [label="click(accept_all)", color="#cc0000", style=dashed, penwidth=1.2];
+BannerToast -> LetMeChoose [label="click(let_me_choose)", color="#999999", style=solid, penwidth=1.2];
+LetMeChoose -> Modal [label="open modal", color="#999999", style=solid, penwidth=1.2];
+Modal -> ToggleAll [label="toggle all (on/off)", color="#999999", style=solid, penwidth=1.2];
+Modal -> AccSecurity [label="toggle ON", color="#cc0000", style=dashed, penwidth=1.2];
+Modal -> AccAnalytics [label="toggle ON", color="#cc0000", style=dashed, penwidth=1.2];
+Modal -> AccExtMedia [label="toggle ON", color="#cc0000", style=dashed, penwidth=1.2];
+Modal -> AccSupport [label="toggle ON", color="#cc0000", style=dashed, penwidth=1.2];
+Modal -> AccPayments [label="toggle ON", color="#cc0000", style=dashed, penwidth=1.2];
+Modal -> AccPersonal [label="toggle ON", color="#cc0000", style=dashed, penwidth=1.2];
+Modal -> Save [label="click(save)", color="#cc0000", style=dashed, penwidth=1.2];
+Home -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+Discover -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+SearchBooks -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+Audiobooks -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+DigitalMag -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+Membership -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+ContactUs -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+Login -> Manage [label="click(manage)", color="#999999", style=solid, penwidth=1.2];
+Manage -> Modal [label="to(modal)", color="#999999", style=solid, penwidth=1.2];
+Home -> Discover [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> SearchBooks [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> Audiobooks [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> DigitalMag [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> Membership [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> ContactUs [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> Login [label="to(page)", color="#999999", style=solid, penwidth=1.2];
+Home -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+Discover -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+SearchBooks -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+Audiobooks -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+DigitalMag -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+Membership -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+ContactUs -> AnalyticsSvc [label="requires(analytics)", color="#cc0000", style=dashed, penwidth=1.2];
+SearchBooks -> ExtMediaSvc [label="requires(external_media)", color="#cc0000", style=dashed, penwidth=1.2];
+Audiobooks -> ExtMediaSvc [label="requires(external_media)", color="#cc0000", style=dashed, penwidth=1.2];
+DigitalMag -> ExtMediaSvc [label="requires(external_media)", color="#cc0000", style=dashed, penwidth=1.2];
+ContactUs -> SupportSvc [label="requires(support_chat)", color="#cc0000", style=dashed, penwidth=1.2];
+Membership -> PaymentsSvc [label="requires(payments)", color="#cc0000", style=dashed, penwidth=1.2];
+Home -> PersonalSvc [label="requires(personalization)", color="#cc0000", style=dashed, penwidth=1.2];
+Discover -> PersonalSvc [label="requires(personalization)", color="#cc0000", style=dashed, penwidth=1.2];
+Login -> SecuritySvc [label="requires(security)", color="#cc0000", style=dashed, penwidth=1.2];
+ContactUs -> SecuritySvc [label="requires(security)", color="#cc0000", style=dashed, penwidth=1.2];
+AcceptAll -> SecuritySvc [color="#999999", style=solid, penwidth=1.2];
+AcceptAll -> AnalyticsSvc [color="#999999", style=solid, penwidth=1.2];
+AcceptAll -> ExtMediaSvc [color="#999999", style=solid, penwidth=1.2];
+AcceptAll -> SupportSvc [color="#999999", style=solid, penwidth=1.2];
+AcceptAll -> PaymentsSvc [color="#999999", style=solid, penwidth=1.2];
+AcceptAll -> PersonalSvc [color="#999999", style=solid, penwidth=1.2];
+AcceptAll -> ConsentSaved [color="#999999", style=solid, penwidth=1.2];
+Save -> SecuritySvc [label="selected? unlock", color="#999999", style=solid, penwidth=1.2];
+Save -> AnalyticsSvc [label="selected? unlock", color="#999999", style=solid, penwidth=1.2];
+Save -> ExtMediaSvc [label="selected? unlock", color="#999999", style=solid, penwidth=1.2];
+Save -> SupportSvc [label="selected? unlock", color="#999999", style=solid, penwidth=1.2];
+Save -> PaymentsSvc [label="selected? unlock", color="#999999", style=solid, penwidth=1.2];
+Save -> PersonalSvc [label="selected? unlock", color="#999999", style=solid, penwidth=1.2];
+Save -> ConsentSaved [color="#999999", style=solid, penwidth=2.8];
+AccSecurity -> SecuritySvc [color="#999999", style=solid, penwidth=1.2];
+AccAnalytics -> AnalyticsSvc [color="#999999", style=solid, penwidth=1.2];
+AccExtMedia -> ExtMediaSvc [color="#999999", style=solid, penwidth=1.2];
+AccSupport -> SupportSvc [color="#999999", style=solid, penwidth=1.2];
+AccPayments -> PaymentsSvc [color="#999999", style=solid, penwidth=1.2];
+AccPersonal -> PersonalSvc [color="#999999", style=solid, penwidth=1.2];
+Essentials -> Out_BasicAccess [color="#999999", style=solid, penwidth=1.2];
+{
+SecuritySvc;
+Login;
+ContactUs;
+} -> Out_SecuredLogin [color="#999999", style=solid, penwidth=1.2];
+{
+AnalyticsSvc;
+} -> OutcomeTelemetry [color="#999999", style=solid, penwidth=1.2];
+{
+ExtMediaSvc;
+} -> Out_AllMedia [color="#999999", style=solid, penwidth=1.2];
+{
+PaymentsSvc;
+Membership;
+} -> Out_Payments [color="#999999", style=solid, penwidth=1.2];
+{
+PersonalSvc;
+Discover;
+Home;
+} -> Out_Personalized [color="#999999", style=solid, penwidth=1.2];
+{
+ExtMediaSvc;
+SupportSvc;
+PaymentsSvc;
+PersonalSvc;
+} -> Out_AllContent [color="#999999", style=solid, penwidth=1.2];
+}

@@ -1,0 +1,45 @@
+%!TEX root = ../thesis.tex
+
+\thispagestyle{plain}
+
+\section*{Acknowledgements}
+
+I would like to express my sincere gratitude to George Konstantinidis and his research team 
+at the University of Southampton for making their algorithms available and for kindly providing 
+implementation details that were essential for this thesis.
+
+I also wish to thank the OpenCms community for their valuable support in answering my technical 
+questions, which helped me overcome practical challenges during system configuration and 
+integration. 
+
+Most importantly, I would like to thank my supervisor, Professor Dr. Stefanie Scherzinger,  for her continuous support, insightful guidance, and constructive feedback throughout the  preparation of this thesis.
+
+\newpage
+
+\section*{Abstract}
+
+
+
+Online privacy regulations such as the GDPR and ePrivacy Directive require that users provide informed, explicit consent for the use of cookies. However, many current implementations of cookie consent mechanisms burden users with complex and repetitive decision flows, leading to interaction fatigue and suboptimal privacy outcomes. This thesis presents a graph-theoretic approach to simplifying cookie consent interfaces by minimizing the number of required user actions while preserving compliance and transparency.
+
+We modelled the consent process as a graph, where nodes are interface elements and edges are possible steps a user can take. Based on data from OpenCms, we created three versions of the graph: a baseline version, a version with quick-consent, and a version with quick-consent plus auto-apply and implicit-first-use
+
+
+\\
+
+Using  structural data extracted from a content management system
+(OpenCms), we construct consent graphs and apply five established path elimination algorithms
+\texttt{RemoveRandomEdge}, \texttt{RemoveFirstEdge}, \texttt{RemoveMinCuts}, \texttt{RemoveMinMC}, and \texttt{BruteForce}—adapted from prior work by Konstantinidis et al.
+
+
+The proposed framework enables the reduction of unnecessary decision paths while maintaining the integrity of user choice and data protection requirements.
+The results show that simply removing edges is not enough. Quick-consent helps to reduce the number of clicks in many cases, but it still requires an explicit save. The biggest improvement came from auto-apply and implicit-first-use, where most paths became shorter and users had to make fewer consent interactions.
+This work provides a technical evaluation of a graph-theoretic model that represents and analyzes user consent flows in cookie-based systems. Still, it suggests that graph-based modelling can help to design cookie banners that are easier for users and at the same time respect privacy regulations.
+
+
+
+
+
+
+
+ 

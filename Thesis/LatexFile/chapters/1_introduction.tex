@@ -1,0 +1,111 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+
+
+\chapter{Introduction}
+\label{chapter:introduction}
+
+Imagine a first-time visitor arrives at a digital library to download an audiobook. A cookie banner appears with several categories (Essential, Functional, Analytics, Marketing) and multiple sub-options. To reject non-essential cookies, the visitor must open “More options” expand categories, toggle several switches, and then confirm. If the visitor later revisits the preferences from another page, the interface may present a slightly different sequence, requiring additional navigation before a valid consent state is recorded. Even to accept only essential cookies, users may face several interactions over recurring screens, which increases cognitive load and the chance of an unintentional opt-in.
+
+This vignette reflects a broader reality. Modern web systems rely on cookies to deliver personalization and analytics, while regulations such as the GDPR \cite{gdpr_text} and the ePrivacy Directive  \cite{eu_eprivacy} require explicit, informed consent for non-essential processing. \\
+In practice, compliance must be operationalized as valid consent states (e.g., “essential-only,” “analytics-allowed,” “withdrawn”) that are unambiguously reachable through the interface and persist across sessions.
+
+Yet interfaces frequently expose redundant or circuitous paths: users traverse long sequences, revisit options, or face parallel branches that differ only superficially. The difficulty is structural rather than cosmetic. Without an explicit model of the consent journey, there is no principled way to reason about path length, redundant branches, or the precise conditions under which a valid consent state is reached.
+
+This thesis takes a structural perspective. We model the consent journey as a directed graph—UI states as nodes and interactions as edges—and apply path-elimination algorithms to remove redundant branches while preserving legal and functional constraints. 
+In concrete terms, “optimize” here means minimizing the user interactions required to reach any target valid consent state without violating requirements such as granularity, revocability, or the non-disablement of essential cookies. 
+The approach is instantiated in a system (OpenCms), we implement the five algorithms—Remove Random Edge, Remove First Edge, Remove Min-Cuts, Remove MinMC, and Brute Force—and link them to the consent workflow to evaluate whether they reduce the interactions required to reach target valid cookie consent states while respecting legal and functional constraints.
+
+
+The next section (Motivation) develops the practical reasons for the problem, presents evidence of user burden, and states the structural gap that motivates our approach.
+
+
+\section{Motivation}
+\label{sec:motivation}
+
+In recent years, the exponential growth of data collection on the web has significantly heightened concerns over user privacy. Websites widely employ cookies and tracking technologies to personalize content and services, but these processes often occur without transparent and informed user control. Regulatory frameworks such as the European Union’s General Data Protection Regulation (GDPR) \cite{gdpr_text} and the ePrivacy Directive  \cite{eu_eprivacy} have established stringent requirements for obtaining explicit and informed user consent prior to the collection and processing of personal data.
+
+Despite these regulatory measures, implementing effective consent management mechanisms remains a significant challenge. Many existing cookie consent systems are either overly simplistic, failing to provide users with meaningful choices, or excessively complex, leading to user confusion, consent fatigue, and inadvertent agreement \cite{nouwens2020darkpatterns, utz2020cookiebanner}. Such shortcomings undermine both the legal validity of the consent obtained and the autonomy of users over their personal information.
+
+Moreover, the complexity of privacy preferences and dependencies between different types of cookies and data processing activities further complicate the issue. Users often face cognitive overload when navigating lengthy consent dialogs with numerous options and unclear implications. This situation necessitates innovative approaches to streamline consent interactions while ensuring compliance and respecting user privacy.
+
+The motivation behind this research stems from addressing these challenges by leveraging graph-theoretic models to represent and optimize user consent pathways in cookie-based systems. By modeling cookie consent decisions and their interdependencies as directed graphs, redundant or less critical decision paths can be identified and eliminated. 
+This simplification aims to reduce the number of interaction steps for users and make the process more understandable and efficient, thereby enhancing the clarity and reliability of the consent obtained.
+
+Building on Konstantinidis et al.’s \cite{DBLP:conf/edbt/FilipczukG023} ideas about path elimination, this thesis moves the focus to the user interface. My motivation is to see whether a simple graph-based view of the UI can reveal practical changes that reduce effort for users while still respecting legal rules.
+
+
+For example, consider a typical user visiting a digital-library website to download an audiobook chapter. The cookie banner displays several categories tailored to this context—such as Essential, Functional (player/download), Analytics, Personalization, Social Media, and Third-Party Services—across multiple panels. To review and make informed decisions, the user needs to click through each category, read unclear descriptions, and accept or reject each individually. Moving from the catalog to the book detail or download page can trigger the dialog again in a slightly different sequence. This results in more than ten interactions, often leading to confusion or blind acceptance of default options.
+
+In contrast, a graph-based model represents these categories and their dependencies as a directed graph. Redundant or dependent categories can be collapsed, and essential consent paths can be highlighted. The user is then guided through a streamlined sequence focused on a few high-impact decisions, reducing the interactions required relative to the baseline flow while preserving the expressiveness and legal validity of the consent process.
+
+
+\section{Problem Statement}
+
+Web applications must obtain valid user consent before setting non-essential cookies. 
+In practice, the consent journey is a workflow with several screens and clicks. 
+On many sites this workflow becomes long, repetitive, or inconsistent, which makes it hard for users to reach a valid consent state with reasonable effort. 
+Our aim is to simplify this workflow at the structural level so that users reach a valid consent state with less effort, without breaking any legal or technical rules.
+
+\subsection*{Definitions}
+\textbf{Valid consent state:} A configuration that (i) supports granularity (fine-grained choices), (ii) is revocable at any time, and (iii) never disables essential cookies. 
+The state must be stored and applied reliably by the system.
+
+\noindent
+\textbf{Structural view:} We view the cookie consent journey as a sequence of UI states (pages/dialogs/tabs) connected by user actions (clicks, toggles, confirmations). 
+This view lets us talk clearly about path length, repeated screens, and redundant branches.
+
+\subsection*{Problem}
+
+The problem investigated in this thesis is how to simplify a baseline consent workflow while maintaining its accessibility and regulatory compliance.
+\\
+The goal is to construct a simplified workflow in which all target consent states---such as essential-only,analytics-permitted, and consent withdrawn---remain reachable from the initial state. 
+At the same time, the workflow should require fewer user interactions, including fewer clicks, screens, and redundant branches, compared to the baseline structure. 
+Throughout the simplification process, all privacy-related constraints must be preserved, particularly those concerning granularity, revocability, and the treatment of essential cookies. 
+\\
+To achieve this, we apply graph-based edge-removal algorithms to simplify the consent structure by eliminating redundant or non-essential connections between nodes.
+Implicit dependencies between options (for example, activating Analytics that automatically enables provider-side scripts) are modeled as explicit constraints in the graph, making such relations transparent and auditable.
+
+
+\subsection*{Success Measures}
+
+We evaluate success by whether users can reach their goal with fewer interactions, whether the flow avoids redundant branches that add effort without benefit, and whether every path still respects all privacy constraints so that no service is enabled without valid consent.
+\subsection*{Scope}
+Our focus is the UI-layer consent workflow and its structural simplification. 
+System-wide enforcement in other layers (client-side code, server-side processing, third-party services) is assumed and not audited here. 
+Wording/visual design tweaks, behavioral user studies, and full legal audits are also out of scope for this section.
+
+\subsection*{Research Question}
+How can graph-theoretic models be used to enforce user consent within cookie-based systems, while preserving system utility and adhering to privacy constraints?
+
+
+\section{Objectives}
+
+This section states clear, testable objectives aligned with the research question. 
+The first objective is to map the baseline consent flow. We document the current Klaro-based flow
+by listing UI states (banner, “more options”, category tabs, toggles, confirma-
+tions) and user transitions; we also define the target valid consent states and
+the privacy constraints (granularity, revocability, essential cookies).
+
+The second objective is to produce candidate simplified versions. We apply five edge-removal al-
+gorithms within the consent module to derive simpler alternative flows, while
+keeping all target states reachable and all constraints respected.
+
+The third objective is to implement and measure. We deploy both the baseline and the simplified
+flows and record metrics.
+
+ Finally, the fourth objective is to evaluate and report honestly. We compare simplified flows against the
+baseline to evaluate whether user effort decreases; we check compliance with
+privacy constraints. 
+
+
+\section{Thesis Roadmap}
+
+The remainder of this thesis is structured as follows. 
+Chapter~\ref{chapter:background} provides the theoretical background, explaining how cookies and consent mechanisms work and how consent interactions can be represented as graphs. 
+Chapter~\ref{chapter:relatedwork} reviews related research in consent management, privacy engineering, and graph-based optimization, identifying conceptual and methodological gaps. 
+Chapter~\ref{chapter:methodology} presents the methodological setup, including the system requirements, stack configuration, and the architecture used to model cookie-consent interactions. 
+Chapter~\ref{chapter:evaluation} describes the implementation and application of five graph-reduction algorithms (Remove First Edge, Remove Random Edge, Brute Force, Remove Min-Cut, and Remove MinMC). It further presents the experimental results on the baseline graph (G0) and its optimized variants (G1 and G1b), followed by a discussion of what these results mean in practice. 
+Chapter~\ref{chapter:discussion} elaborates on the findings, addressing limitations, threats to validity, and the broader implications for consent-system design. 
+Finally, Chapter~\ref{chapter:conclusion} concludes the thesis by summarizing the main contributions and providing an outlook on future research directions.

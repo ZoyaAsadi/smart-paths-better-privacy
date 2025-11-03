@@ -1,0 +1,115 @@
+digraph AccurateExpandedWebsiteGraphFullCapacity {
+    rankdir=LR;
+    node [shape=box, style=filled, fontname="Arial"];
+
+    // Input: Cookie/Subcookie Types
+    EssentialCookies [label="Essential Cookies", fillcolor=lightyellow, capacity=1];
+    AnalyticsCookies [label="Analytics Cookies", fillcolor=lightyellow, capacity=1];
+    FunctionalCookies [label="Functional Cookies", fillcolor=lightyellow, capacity=1];
+    AllCookies [label="All Cookies", fillcolor=yellow, penwidth=2, color=red, capacity=1];
+
+    // Middle: Website Features and Sub-Features
+    LoginPage [label="Login Page (login.php)", fillcolor=lightblue, capacity=1];
+    SessionStart [label="Session Start", fillcolor=lightblue, capacity=1];
+    CookieConsent [label="Cookie Consent (Klaro)", fillcolor=lightgreen, capacity=1];
+    Dashboard [label="Dashboard/Profile", fillcolor=lightgreen, capacity=1];
+    SearchForm [label="Book Search Form (search.php)", fillcolor=lightgreen, capacity=1];
+    QueryExecution [label="Book Query Execution", fillcolor=lightgreen, capacity=1];
+    ResultDisplay [label="Book Result Display", fillcolor=lightgreen, capacity=1];
+    BookDownload [label="Book Download", fillcolor=lightgreen, capacity=1];
+    CategorySearch [label="Category Search (category-search.php)", fillcolor=lightgreen, capacity=1];
+    AudiobookSearch [label="Audiobook Search (search-audiobooks.php)", fillcolor=lightgreen, capacity=1];
+    AudiobookResult [label="Audiobook Result Display", fillcolor=lightgreen, capacity=1];
+    AudiobookDownload [label="Audiobook Download", fillcolor=lightgreen, capacity=1];
+    MembershipPage [label="Membership Page", fillcolor=lightgreen, capacity=1];
+    MembershipFeatures [label="Membership Features", fillcolor=lightgreen, capacity=1];
+    DigitalMagazinePage [label="Digital Magazine Page", fillcolor=lightgreen, capacity=1];
+    MagazineView [label="Magazine View", fillcolor=lightgreen, capacity=1];
+    FeedbackPage [label="Feedback Page", fillcolor=lightgreen, capacity=1];
+    FeedbackSubmit [label="Feedback Submit", fillcolor=lightgreen, capacity=1];
+    ContactPage [label="Contact Us Page", fillcolor=lightgreen, capacity=1];
+    ContactSubmit [label="Contact Submit", fillcolor=lightgreen, capacity=1];
+    HomePage [label="Open Library Home", fillcolor=lightblue, capacity=1];
+    DiscoverPage [label="Discover the Best", fillcolor=lightblue, capacity=1];
+    SearchResults [label="Search Results (search-results.php)", fillcolor=lightgreen, capacity=1];
+
+    // Output: Goals
+    DownloadBook [label="Download Book", fillcolor=orange, capacity=1];
+    DownloadAudiobook [label="Download Audiobook", fillcolor=orange, capacity=1];
+    SendFeedback [label="Send Feedback", fillcolor=orange, capacity=1];
+    Contact [label="Contact Us (Message/Email)", fillcolor=orange, capacity=1];
+    AccessMagazine [label="Access Magazine", fillcolor=orange, capacity=1];
+
+    // Cookie to feature gating (all with capacity=1)
+    EssentialCookies -> CookieConsent [capacity=1];
+    EssentialCookies -> LoginPage [capacity=1];
+    EssentialCookies -> SearchForm [capacity=1];
+    EssentialCookies -> ContactPage [capacity=1];
+    EssentialCookies -> FeedbackPage [capacity=1];
+    AnalyticsCookies -> MembershipPage [capacity=1];
+    AnalyticsCookies -> MembershipFeatures [capacity=1];
+    FunctionalCookies -> DigitalMagazinePage [capacity=1];
+    FunctionalCookies -> MagazineView [capacity=1];
+    FunctionalCookies -> AudiobookSearch [capacity=1];
+    FunctionalCookies -> AudiobookResult [capacity=1];
+    FunctionalCookies -> AudiobookDownload [capacity=1];
+    AllCookies -> LoginPage [capacity=1];
+    AllCookies -> Dashboard [capacity=1];
+    AllCookies -> SearchForm [capacity=1];
+    AllCookies -> QueryExecution [capacity=1];
+    AllCookies -> ResultDisplay [capacity=1];
+    AllCookies -> BookDownload [capacity=1];
+    AllCookies -> CategorySearch [capacity=1];
+    AllCookies -> AudiobookSearch [capacity=1];
+    AllCookies -> AudiobookResult [capacity=1];
+    AllCookies -> AudiobookDownload [capacity=1];
+    AllCookies -> MembershipPage [capacity=1];
+    AllCookies -> MembershipFeatures [capacity=1];
+    AllCookies -> DigitalMagazinePage [capacity=1];
+    AllCookies -> MagazineView [capacity=1];
+    AllCookies -> FeedbackPage [capacity=1];
+    AllCookies -> FeedbackSubmit [capacity=1];
+    AllCookies -> ContactPage [capacity=1];
+    AllCookies -> ContactSubmit [capacity=1];
+    AllCookies -> HomePage [capacity=1];
+    AllCookies -> DiscoverPage [capacity=1];
+    AllCookies -> SearchResults [capacity=1];
+
+    // Feature flows (all with capacity=1)
+    CookieConsent -> LoginPage [capacity=1];
+    LoginPage -> SessionStart [capacity=1];
+    SessionStart -> Dashboard [capacity=1];
+    Dashboard -> SearchForm [capacity=1];
+    SearchForm -> QueryExecution [capacity=1];
+    QueryExecution -> ResultDisplay [capacity=1];
+    ResultDisplay -> BookDownload [capacity=1];
+    BookDownload -> DownloadBook [capacity=1];
+    SearchForm -> CategorySearch [capacity=1];
+    CategorySearch -> SearchResults [capacity=1];
+    SearchResults -> BookDownload [capacity=1];
+    SearchResults -> AudiobookResult [capacity=1];
+    AudiobookSearch -> AudiobookResult [capacity=1];
+    AudiobookResult -> AudiobookDownload [capacity=1];
+    AudiobookDownload -> DownloadAudiobook [capacity=1];
+    Dashboard -> MembershipPage [capacity=1];
+    MembershipPage -> MembershipFeatures [capacity=1];
+    MembershipFeatures -> BookDownload [capacity=1];
+    MembershipFeatures -> MagazineView [capacity=1];
+    DigitalMagazinePage -> MagazineView [capacity=1];
+    MagazineView -> AccessMagazine [capacity=1];
+    Dashboard -> FeedbackPage [capacity=1];
+    FeedbackPage -> FeedbackSubmit [capacity=1];
+    FeedbackSubmit -> SendFeedback [capacity=1];
+    Dashboard -> ContactPage [capacity=1];
+    ContactPage -> ContactSubmit [capacity=1];
+    ContactSubmit -> Contact [capacity=1];
+    HomePage -> DiscoverPage [capacity=1];
+    DiscoverPage -> SearchForm [capacity=1];
+
+    // Direct AllCookies to all goals (fastest path, capacity=1)
+    AllCookies -> DownloadBook [color=red, style=dashed, penwidth=2, capacity=1];
+    AllCookies -> DownloadAudiobook [color=red, style=dashed, penwidth=2, capacity=1];
+    AllCookies -> SendFeedback [color=red, style=dashed, penwidth=2, capacity=1];
+    AllCookies -> Contact [color=red, style=dashed, penwidth=2, capacity=1];
+    AllCookies -> AccessMagazine [color=red, style=dashed, penwidth=2, capacity=1];
+}

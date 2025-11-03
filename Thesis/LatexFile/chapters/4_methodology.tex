@@ -1,0 +1,888 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+
+
+
+
+
+
+
+\chapter{Methodology}
+\label{chapter:methodology}
+
+
+
+This chapter explains how we modelled the website-wide cookie–consent journey as a directed, labelled graph; how we designed two streamlined variants of the experience (G1 and G1b); how we implemented the toolchain; and how we measured user effort in terms of clicks. All numerical outcomes, tables, and figures produced by this pipeline are reported in Chapter~\ref{chapter:evaluation}.
+
+\section{Specifications and Requirements}
+\label{sec:specifications}
+
+\paragraph{Goal.}
+Reduce the number of user interactions required to reach target outcomes (e.g., secured login, media playback, payments) \emph{without} weakening privacy-by-default. Non-essential services remain OFF until the user consents; consent must be explicit, traceable, and reversible.
+
+\paragraph{Scope and completeness.}
+The model covers the Consent Management UI (banner+modal), all site sections that can surface consent prompts, and all non-essential services that are gated by consent. The graph captures multiple legitimate routes (e.g., first-time banner, “manage cookies”, granular toggles, accept-all) because different users may take different paths.
+
+\paragraph{Automation and reproducibility.}
+Algorithms operate on the \emph{entire} graph—no manual, hand-picked edge deletions. 
+
+
+\subsection*{What we measure}
+For every \texttt{start} node (entry points such as \texttt{Entry}, \texttt{BannerToast}, \texttt{Home}, \texttt{Discover}, \texttt{SearchBooks}, \texttt{Audiobooks}, \texttt{DigitalMagazine}, \texttt{Membership}, \texttt{ContactUs}, \texttt{Login}, and also \texttt{Manage}, \texttt{Modal}, \texttt{LetMeChoose}, \texttt{AcceptAll}, \texttt{Save}) and for each \texttt{outcome} (\texttt{Out\_BasicAccess}, \texttt{Out\_SecuredLogin}, \texttt{Out\_AllMedia}, \texttt{Out\_Payments}, \texttt{Out\_Personalized}, \texttt{Out\_AllContent}, \texttt{ConsentSaved}
+%\texttt{OutcomeTelemetry})
+we compute two costs:
+\medskip
+\begin{itemize}
+  \item \textbf{Consent clicks} — the number of explicit consent actions on the path: \texttt{click(accept\_all)}, \texttt{click(save)}, any granular \texttt{toggle ON}, and (in G1b) \texttt{click(auto\_apply)}. Edges labelled \texttt{implicit\_first\_use} cost zero in this metric.
+  \item \textbf{Total clicks} — all UI interactions on the path that require a user click (including \texttt{click(manage)}, opening the modal, etc.). Pure dependencies like \texttt{requires(…)} carry zero cost here.
+\end{itemize}
+
+Costs are defined per edge via labels; minimum-cost paths are computed with Dijkstra on the labelled directed graph. We compare costs \emph{before} and \emph{after} an algorithmic change or a design variant.
+
+\section{System Stack and Setup}
+\label{sec:stack}
+
+We implemented the demo website locally. The stack is:
+Figures~\ref{fig:banner}–\ref{fig:modal} show the cookie banner, the Klaro modal with toggles.
+
+
+
+
+\begin{table}[h]
+  \centering
+  
+  \label{tab:system-stack}
+   \caption{Local system stack and setup with consent storage.}.
+  \begin{tabularx}{\linewidth}{@{} l l X @{}}
+    \toprule
+    \textbf{Component} & \textbf{Technology} & \textbf{Details / Purpose} \\
+    \midrule
+    CMS / Rendering & OpenCms (Tomcat views) &
+      Renders pages: Home, Login, Discover, Search, Audiobooks, Digital Magazine, Membership, Contact. \\
+      \\
+    Server Runtime  & MAMP (Apache, PHP) &
+      Hosts PHP endpoints for server-side actions. \\
+      \\
+    Endpoints       & PHP &
+      Book Search, Audiobook Search, Contact Form, Membership. \\
+      \\
+    Database        & MySQL (\texttt{opencms}) &
+      Stores shared data: Search metadata, subscriptions, contact tickets, consent preferences. \\
+      \\
+    Consent Mgmt    & Klaro CMP &
+      Manages cookie consent with categories and sub-cookies. \\
+      \\
+    Data Storage    & Cookie \& MySQL &
+      CMP consent cookies are stored on localhost and in the database.  
+      User decisions are also saved in MySQL:  
+      – If the user is registered, consents are linked to the username.  
+      – If the user is not registered, consents are stored under a guest profile. \\
+    \bottomrule
+  \end{tabularx}
+ 
+\end{table}
+%%%%%%%%%%%%%%%%
+\newpage
+
+%%%%%
+\vspace*{\baselineskip}
+
+
+% ---- Figure 1: banner ----
+\setlength{\fboxrule}{1.6pt}  % ضخامت قاب
+\setlength{\fboxsep}{0pt}     % فاصله‌ی داخل قاب تا تصویر (padding)
+
+\begin{figure}[H]
+  \centering
+  \fbox{\includegraphics[width=\textwidth]{photo1.png}}
+  \caption{Cookie banner on the home page (Klaro).}
+  \label{fig:banner}
+\end{figure}
+%%%%%%%%%%%%%%
+
+\begin{table}[h]
+  \centering
+  
+  \label{tab:cmp-categories}
+  \caption{Klaro CMP categories and mapped services.}.
+  \begin{tabularx}{\linewidth}{@{} l X X @{}}
+    \toprule
+    \textbf{Category} & \textbf{Example Services} & \textbf{Notes} \\
+    \midrule
+    Essential (always on) & Core cookies & Non-optional functionality. \\
+    \\
+    Security & Google reCAPTCHA; Cloudflare Turnstile & Bot and abuse protection. \\
+    \\
+    Analytics & Google Analytics 4 (GA4); Matomo & Usage statistics and analysis. \\
+    \\
+    External media & YouTube; Vimeo; Google Maps & Embedded third-party content. \\
+    \\
+    Support / Chat & Tawk.to; Intercom & Live chat / helpdesk widgets. \\
+    \\
+    Payments & Stripe; PayPal & Payment processing. \\
+    \\
+    Personalization & On-site recommendations & Content/UI personalization. \\
+    \bottomrule
+  \end{tabularx}
+  
+\end{table}
+
+% ---- Figure 2: modal ----
+\setlength{\fboxrule}{1.6pt}  % ضخامت خط قاب
+\setlength{\fboxsep}{0pt}     % فاصله بین تصویر و قاب
+
+\begin{figure}[H]
+  \centering
+  \fbox{\includegraphics[width=\textwidth]{img/photo2:1.png}}
+  \caption{Privacy settings (Klaro banner) with categories.}
+  \label{fig:modal}
+\end{figure}
+%%%%%%%%%%%%%%%%
+
+
+
+\section{Architecture and System Design}
+\label{sec:design}
+
+\subsection*{The baseline graph (G0)}
+We model the consent journey in Graphviz DOT (\texttt{artefacts/graphs/G0.dot}) with three layers:
+
+\begin{enumerate}
+  \item \textbf{UI/CMP layer} — \texttt{Entry}, \texttt{BannerToast}, \texttt{LetMeChoose}, \texttt{Modal}, \texttt{Manage}, actions \texttt{AcceptAll}, \texttt{AcceptSelected}/\texttt{Save}, \texttt{ToggleAll}, granular toggles \texttt{AccSecurity}, \texttt{AccAnalytics}, \texttt{AccExtMedia}, \texttt{AccSupport}, \texttt{AccPayments}, \texttt{AccPersonal}.
+  \item \textbf{Pages layer} — \texttt{Home}, \texttt{Discover}, \texttt{SearchBooks}, \texttt{Audiobooks}, \texttt{DigitalMagazine}, \texttt{Membership}, \texttt{ContactUs}, \texttt{Login}, each with realistic navigation and a \texttt{click(manage)} path into the CMP.
+  \item \textbf{Services layer (gated)} — \texttt{SecuritySvc}, \texttt{AnalyticsSvc}, \texttt{ExtMediaSvc}, \texttt{SupportSvc}, \texttt{PaymentsSvc}, \texttt{PersonalSvc}, plus \texttt{Essentials}.
+\end{enumerate}
+
+Pages link to services via \texttt{requires(…)} edges; UI actions “unlock” services via \texttt{AcceptAll}/\texttt{Save}/\texttt{Acc*} $\rightarrow$ \texttt{Service}. Outcomes include \texttt{Out\_BasicAccess}, \texttt{Out\_SecuredLogin}, \texttt{Out\_AllMedia}, \texttt{Out\_Payments}, \texttt{Out\_Personalized}, \texttt{Out\_AllContent}, \texttt{ConsentSaved}. %\texttt{OutcomeTelemetry}
+
+Sanity check. The full G0 contains 39 nodes and 81 edges (validated with \texttt{pydot/networkx}). For some analytics we also use a filtered view (73 edges) that omits non-participating edges; both are reported in the Results section for transparency.
+
+\subsection*{Baseline consent graph (G0)}
+
+The graph \textbf{G0} models the status quo of the consent workflow on the Open Library site. Its purpose is to capture, in a single directed graph, the consent UI (CMP), the site pages where a journey can start, the non-essential services that are gated by consent (purposes), and the observable outcomes after consent has been applied. This baseline contains \textbf{39 nodes} and \textbf{81 directed edges} (unique), laid out left-to-right for readability. Importantly, G0 contains no quick shortcuts and no automatic persistence of consent; every consent change must be committed explicitly by the user.
+
+Conceptually, the nodes fall into four families that interact tightly. First, the UI family represents the Klaro banner and modal: \texttt{Entry} (first visit) leads to \texttt{BannerToast}; users can \texttt{LetMeChoose} to open the \texttt{Modal}, or press \texttt{AcceptAll} or \texttt{AcceptSelected}, or \texttt{Decline}. Inside the modal there is \texttt{ToggleAll}, the commit button \texttt{Save}, and six per-purpose toggles: \texttt{AccSecurity}, \texttt{AccAnalytics}, \texttt{AccExtMedia}, \texttt{AccSupport}, \texttt{AccPayments}, and \texttt{AccPersonal}. These \texttt{Acc*} nodes change the selection only; in G0 they do not take effect until the user presses \texttt{Save}. The unique terminal state of the UI is \texttt{ConsentSaved}, denoting that the current selection has been persisted (to localhost and database). The only two ways to reach \texttt{ConsentSaved} are: (i) pressing \texttt{AcceptAll} on the first layer, which unlocks all non-essential purposes in one step, or (ii) choosing individual purposes in \texttt{Modal} and then pressing \texttt{Save}.
+
+This interaction flow of the Klaro banner and modal is illustrated in Figure~\ref{fig:g0-ui}.
+\begin{figure}[H]
+  \centering  \fbox{\includegraphics[width=\textwidth]{img/4.3.pdf}}
+  \caption{G0 — UI/CMP layer: User interactions from banner and modal to consent saving.}
+  \label{fig:g0-ui}
+\end{figure}
+
+\medskip
+Second, the pages family models typical entry points of a user journey: \texttt{Home}, \texttt{Discover}, \texttt{SearchBooks}, \texttt{Audiobooks}, \texttt{DigitalMag}, \texttt{Membership}, \texttt{ContactUs}, and \texttt{Login}. Each page links to \texttt{Manage} (ManageCookies entry), which brings users back to the modal when they want to adjust their choices. Sample navigation edges between pages (e.g., \texttt{Home}~$\to$~\texttt{Discover}) make explicit that consent interaction happens in the context of real browsing.
+
+The navigation structure and the ManageCookies entry points are shown in Figure~\ref{fig:g0-pages}.
+
+\begin{figure}[H]
+  \centering
+  \fbox{\includegraphics[width=\textwidth]{img/4.4.pdf}}
+  \caption{G0 — Pages layer: Navigation paths and ManageCookies entry points in Open Library.}
+  \label{fig:g0-pages}
+\end{figure}
+
+\medskip
+
+Third, the services family contains non-essential capabilities that are gated by consent: 
+\texttt{AnalyticsSvc}, \texttt{ExtMediaSvc}, \texttt{SupportSvc}, \texttt{PaymentsSvc}, \texttt{PersonalSvc}, and \texttt{SecuritySvc} (with \texttt{Essentials} always on).
+Edges of the form \texttt{requires(purpose)} from pages to services record which purpose a page depends on (e.g.,\texttt{DigitalMag}~$\to$~\texttt{requires(analytics)},
+\texttt{SearchBooks}~$\to$~
+\texttt{requires(external\_media)}).
+
+Conversely, edges from \texttt{Save} to each service (\texttt{selected? unlock}) and direct edges from \texttt{AcceptAll} to all services encode when a service becomes unlocked. This distinction—``needs'' (dependency) versus ``unlocks'' (after consent)—is the backbone of path analysis: if a page requires a service but the service is not yet unlocked, the user must detour into the consent UI.
+
+The page–service dependencies and unlock semantics are visualized in Figure~\ref{fig:g0-services}.
+\medskip
+\begin{figure}[H]
+  \centering
+  \fbox{\includegraphics[height=0.8\textheight, keepaspectratio]{img/4.5.pdf}}
+  \caption{G0 — Services layer: Consent-gated purposes and sub-services.}
+  \label{fig:g0-services}
+\end{figure}
+
+\medskip
+
+Fourth, the outcomes family captures observable post-consent capabilities, such as \texttt{Out\_BasicAccess}, \texttt{Out\_AllContent}, \texttt{Out\_AllMedia}, \texttt{Out\_Payments}, \texttt{Out\_Personalized},and
+\texttt{Out\_SecuredLogin}. %and %\texttt{OutcomeTelemetry}.
+Reaching one of these nodes in measurement indicates that the user has achieved the intended capability (e.g., playback of external media or activation of analytics).
+
+The resulting observable post-consent capabilities are summarized in Figure~\ref{fig:g0-outcomes}.
+
+\begin{figure}[H]
+  \centering
+  \setlength{\fboxsep}{2pt}   
+  \setlength{\fboxrule}{1.2pt}
+
+  \fbox{\includegraphics[width=0.30\textwidth]{img/outneu.pdf}}
+  \caption{G0 — Outcomes layer: Observable capabilities after consent.}
+  \label{fig:g0-outcomes}
+\end{figure}
+
+
+
+Edge labels in G0 serve three roles. (i) UI interactions such as \texttt{click(accept\_all)}, \texttt{click(save)}, \texttt{open modal}, and \texttt{toggle ON} describe actual interface actions. (ii) Dependencies \texttt{requires(...)} from pages to services state prerequisites. (iii) Unlock semantics express when services become available: \texttt{selected? unlock} from \texttt{Save} (conditional on prior selections) and unconditional unlocks from \texttt{AcceptAll}. In addition, certain node labels include small markers like ``(+2)'' or ``(+3)''; these encode the consent-portion click cost used in our path-length accounting for the results tables.
+
+Behaviorally, G0 is intentionally conservative: there is no auto-apply. Switching \texttt{Acc*} toggles only prepares a selection; nothing is persisted until \texttt{Save} is pressed, and therefore consent clicks are relatively high for most content starts (typically two clicks: enter the consent UI and save). The only true one-step path is \texttt{AcceptAll}, which unlocks everything immediately and leads straight to \texttt{ConsentSaved}; while this shortens many paths, it may not reflect granular user preferences and is treated distinctly in our analysis.
+
+Two examples illustrate the mechanics. If a user starts on \texttt{Home} and wants to view an embedded preview that depends on external media, the edge \texttt{Home}~$\to$~\texttt{requires(external\_media)} is active, but \texttt{ExtMediaSvc} remains locked until the user detours to \texttt{BannerToast}/\texttt{Modal}, turns on \texttt{AccExtMedia}, and presses \texttt{Save}. Only then can the path proceed to the corresponding outcome. By contrast, pressing \texttt{AcceptAll} at entry unlocks all services and yields immediate access to outcomes that would otherwise require multiple steps.
+
+\medskip
+Finally, G0 serves as the control in our evaluation. For every start–outcome pair we compute the shortest path length \(L_{G0}\) and, where relevant, the shortest path to \texttt{ConsentSaved}. All deltas in the results section are defined relative to this baseline (e.g., \(\Delta = L_{\mathrm{G1}} - L_{\mathrm{G0}}\)). Because G0 requires an explicit \texttt{Save} (or \texttt{AcceptAll}) to commit consent, any reductions in consent clicks or total path length observed in later graphs can be attributed unambiguously to the UI/semantic changes introduced in G1 and G1b. In short, G0 is a faithful picture of a classic CMP flow—banner $\to$ modal $\to$ per-purpose selection $\to$ save—and a reliable baseline against which improvements are measured.
+
+\medskip
+
+
+
+\FloatBarrier
+
+
+
+\subsection*{Design variants G1 (Quick-Consent)}
+%\paragraph{G1 (Quick-Consent).}
+Graph~G1 extends the baseline model G0 by introducing
+explicit one-click consent shortcuts at the user-interface level.
+The goal is to shorten common consent paths while keeping all decisions explicit and GDPR-compliant.
+Compared to G0, redundant \texttt{Save} interactions are removed, and
+each major service can now be enabled through a direct in-context “Quick Consent” action
+(e.g., a small inline prompt appearing at the first use of analytics, payments, or personalization).
+
+\textbf{Node types.}
+The graph contains four main node families, consistent with G0 but extended with new inline nodes:
+\begin{itemize}
+  \item \textbf{UI nodes:} Represent interface elements such as the \texttt{BannerToast},
+        \texttt{Modal}, and \texttt{ManageCookies} entry points. 
+        New nodes of type \texttt{Quick\_*} (e.g., \texttt{Quick\_Analytics},
+        \texttt{Quick\_Payments}) model inline consent prompts that appear within the page
+        rather than inside the main modal.
+  \item \textbf{Page nodes:} Represent real website pages where consent-relevant actions may occur
+        (\texttt{Home}, \texttt{Discover}, \texttt{Audiobooks}, etc.).
+        These pages connect both to the \texttt{Manage} node and to the new inline quick-consent nodes.
+  \item \textbf{Service nodes:} Correspond to non-essential capabilities gated by consent
+        (\texttt{AnalyticsSvc}, \texttt{PaymentsSvc}, \texttt{ExtMediaSvc}, etc.).
+        They are activated either through \texttt{Save}/\texttt{AcceptAll}
+        or directly by the corresponding \texttt{Quick\_*} node.
+  \item \textbf{Outcome nodes:} Represent observable post-consent capabilities
+        (e.g., \texttt{Out\_Payments}, \texttt{Out\_AllMedia}, \texttt{Out\_Personalized}).
+        Each outcome is reachable as soon as its required service has been unlocked.
+\end{itemize}
+
+\textbf{Node labels.}
+Labels specify either the UI element or its semantic role.
+For example, “\texttt{Allow Payments (1-click)}” denotes a Quick-Consent node that both unlocks
+\texttt{PaymentsSvc} and writes the consent to storage in a single step.
+Markers such as “(+2)” indicate the click cost associated with the corresponding purpose.
+
+\textbf{Edge types.}
+Three edge categories define the system behaviour:
+(i) \textbf{UI transitions} such as \texttt{click(accept\_all)}, \texttt{open modal}, or \texttt{inline allow}
+model user interactions;
+(ii) \textbf{Dependencies} of the form \texttt{requires(purpose)} link pages to the services they depend on;
+and (iii) \textbf{Unlock edges} express consent activation—either explicit 
+(\texttt{selected? unlock}) after pressing \texttt{Save},
+or implicit through one-click Quick-Consent nodes.
+Each \texttt{Quick\_*} node has outgoing edges both to its service and to \texttt{ConsentSaved},
+reflecting that consent is applied immediately.
+
+%\emph{Effect.}
+Overall, G1 preserves the logical structure of G0 but introduces
+shorter consent paths for frequently used services.
+Paths that previously required two interactions (open modal → save)
+can now be completed in one click.
+This change reduces the average number of consent interactions
+without bypassing explicit user control.
+\\
+The structural differences between G$_0$ and G$_1$ are shown in
+Figure~\ref{fig:g1-diff}, highlighting the newly introduced quick-consent nodes
+and inline ``allow'' edges that shorten user paths.
+\medskip
+
+
+\begin{figure}[H]
+  \centering
+  \fbox{\includegraphics[width=\textwidth]{img/G1vsG0.png}}
+  \caption{Structural differences between G1 and G0 — new quick-consent nodes and inline ‘allow’ edges.}
+  \label{fig:g1-diff}
+\end{figure}
+
+
+  
+
+\subsection*{G1b (Quick-Consent with Auto-Apply)}
+
+Graph~G1b represents the final stage of the design evolution.
+It extends the baseline G$_0$ and its intermediate variant G$_1$
+by introducing two additional mechanisms that further simplify
+the consent process while preserving explicit user control and
+privacy defaults. These mechanisms are modelled with explicit
+edges in \texttt{artefacts/graphs/G1b.dot} and are visually summarised
+in Figure~\ref{fig:g1b-diff}.
+
+1. Auto-apply actions.
+In G$_0$ and G$_1$, consent toggles (\texttt{Acc*}) only changed the user’s
+selection; the changes took effect only after the user pressed
+\texttt{Save}. In G$_1b$, these toggles become auto-applying:
+a single click both toggles the purpose and immediately stores
+the consent. This behaviour is expressed by new edges from
+\texttt{AccSecurity}, \texttt{AccAnalytics}, \texttt{AccExtMedia},
+\texttt{AccSupport}, \texttt{AccPayments}, \texttt{AccPersonal}, and
+\texttt{ToggleAll} directly to \texttt{ConsentSaved}.
+In practice, the user still performs an explicit action,
+but the redundant ``Save'' step disappears.
+This reduces one interaction for every consent change.
+
+2. Implicit first use.
+A second improvement eliminates consent prompts in obvious,
+low-risk contexts. When a user attempts to use a feature that
+depends on a non-essential service (for example starting an
+analytics session or playing embedded media), G$_1b$ automatically
+writes the corresponding consent entry with zero extra clicks.
+Formally, this is represented by dashed edges from each service
+node (\texttt{AnalyticsSvc}, \texttt{ExtMediaSvc}, \texttt{PaymentsSvc},
+\texttt{PersonalSvc}, \texttt{SecuritySvc}, and \texttt{SupportSvc})
+to \texttt{ConsentSaved}. This mechanism keeps privacy defaults
+intact (everything off until intent) yet removes redundant detours
+through the consent UI.
+
+Node types.
+The node families remain consistent with the earlier graphs:
+\begin{itemize}
+  \item \textbf{UI nodes:} interface elements such as
+        \texttt{BannerToast}, \texttt{Modal}, \texttt{Manage},
+        and the six \texttt{Acc*} toggles. These now include
+        the auto-apply behaviour.
+  \item \textbf{Service nodes:} non-essential capabilities gated
+        by consent (\texttt{AnalyticsSvc}, \texttt{PaymentsSvc}, etc.),
+        each connected to \texttt{ConsentSaved} by a dashed ``implicit
+        first-use'' edge.
+  \item \textbf{Outcome node:} the terminal \texttt{ConsentSaved},
+        which marks the point at which a consent choice is persisted.
+\end{itemize}
+
+Node labels.
+Labels identify either the user-interface element (e.g.,
+``Allow Analytics'') or its semantic role (``Consent saved'').
+Where relevant, numerical markers such as ``(+1)'' denote the
+click cost associated with each interaction, allowing path-length
+comparisons with G$_0$ and G$_1$.
+
+Edge types.
+Three main categories remain:
+(i) \textbf{UI transitions} such as \texttt{click(accept\_all)} or
+\texttt{toggle on}, (ii) \textbf{dependencies} of the form
+\texttt{requires(purpose)} linking pages to their required services,
+and (iii) \textbf{unlock and persistence edges}.
+Within this third group, G$_1b$ adds the new \texttt{auto\_apply}
+and \texttt{implicit\_first\_use} edges, represented in Figure~\ref{fig:g1b-diff}
+as solid green and dashed blue lines respectively.
+
+Effect.
+Compared to the baseline G$_0$, G$_1b$ drastically shortens the
+number of required interactions to record consent.
+Users can toggle any purpose and have it saved immediately,
+or trigger consent implicitly by using a feature.
+While all consents remain explicit and reversible,
+the user no longer has to enter the modal or press ``Save'' after
+each change. The graph thus models a minimal-friction consent
+workflow where intent directly implies persistence.
+The differences relative to G$_0$ are visualised in
+Figure~\ref{fig:g1b-diff}, showing the newly added
+auto-apply and implicit first-use semantics.
+
+\vspace*{\baselineskip}
+\vspace*{\baselineskip}
+\begin{figure}[htbp]
+  \centering
+  \fbox{\includegraphics[width=\textwidth]{img/4.8.pdf}}
+  \caption{G1b vs G$_0$ (diff): Quick-consent nodes (G1), auto-apply, and implicit first-use edges (G1b).}
+  \label{fig:g1b-diff}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
+
+
+
+
+\chapter{Evaluation}
+\label{chapter:evaluation}
+
+\section{Implementation}
+\label{sec:implementation}
+
+
+
+ 
+
+
+
+
+
+The implementation of the graph engine and evaluation pipeline was carried out
+in a Python environment using version 3.11. Standard libraries such as
+Graphviz, \texttt{pydot}, and \texttt{networkx} were employed to construct,
+visualise, and analyse the consent graphs. These tools provided the necessary
+infrastructure for importing DOT models, executing the edge-removal algorithms,
+and exporting the resulting statistics for evaluation.
+
+
+
+%----------------
+\section{Applying Graph-Reduction Algorithms}
+\label{sec:applying}
+
+To evaluate how structural simplification affects the consent flow and privacy compliance,
+We applied the five algorithms described in Chapter~\ref{chapter:background} 
+(\texttt{Remove\_First\_Edge}, \texttt{Remove\_Random\_Edge},
+\texttt{Brute\_Force}, \texttt{Remove\_Min\_Cut}, \texttt{Remove\_MinMC})
+to the refined constraint graph.
+
+
+
+Each algorithm follows a different logic for removing edges, and together they represent a full spectrum of pruning strategies—from very aggressive removal to more careful and privacy-preserving approaches. 
+The aim is to observe how these algorithms affect both the graph structure and the consent logic. 
+For all experiments, the same cleaned graph and refined constraint rules were used.
+
+\subsection{A1 – Remove First Edge}
+\label{sec:a1}
+
+
+
+
+The Remove First Edge algorithm is a greedy procedure that, during each traversal from the entry node toward the outcome or capability nodes, removes the first available edge on the current branch. Repeating this rule causes branches to be pruned very early, thereby reducing both the depth and width of the graph. However, because these decisions are purely local, global optimality cannot be guaranteed.
+
+
+\medskip
+This approach represents a highly aggressive simplification of the user interface: by removing the ``first'' edges, a large portion of intermediate user options disappears, and the navigation paths become shorter. As a result, the overall click cost is reduced, but the granularity of consent and sometimes the accessibility of certain capabilities are lost.
+\medskip
+
+In Figure~\ref{fig:a2-first}, which shows graph A1, the red dashed edges represent the edges that were removed. Three key regions can be observed:
+
+\begin{enumerate}
+    \item{UI cluster (top):}  
+    From the node \texttt{Privacy settings (modal)} to several fine-grained acceptance actions (such as \texttt{Accept SupportChat}, \texttt{Accept Payments}, \texttt{Accept Personalization}, \texttt{Accept Security}, \texttt{Accept Analytics}, and \texttt{Accept External media}), many red edges appear. This indicates that numerous on/off paths within the modal have been eliminated. As a consequence, the user can no longer decide independently for each category; only \textit{Accept all} and a few dominant paths remain.
+
+    \item{Link to \texttt{Consent saved}:}  
+    The continuous red path leading to \texttt{Consent saved} shows that part of the saving sequence (for instance, \texttt{Save (apply selected)}) has been removed or merged into a dominant path. Consequently, consent saving now occurs mostly through global acceptance rather than via partial selections.
+
+    \item{Outcomes/Capabilities (right):}  
+    Near the outcome nodes (\texttt{Payments}, \texttt{External media}, \texttt{Personalization}, \texttt{Security}, \texttt{Analytics}), red incoming edges indicate that some outcome nodes are no longer reachable or can only be accessed through specific paths, typically those involving total acceptance. Nodes such as \texttt{Personalized recommendations} or \texttt{All embedded media playable} thus become inaccessible in many scenarios.
+\end{enumerate}
+\medskip
+%\paragraph{Structural and practical effects.}
+%Reachability: 
+By removing the first edge on each branch, several routes from the UI to optional outcomes are cut off, which decreases the number of reachable nodes.  
+%Click cost: 
+The reduction of intermediate branches shortens the remaining paths, leading to a measurable decrease in average click cost.  
+%Utility and compliance: 
+The loss of fine-grained paths may conflict with principles of data minimization and informed choice, since users are effectively nudged toward a global ``accept all'' decision and lose intermediate control options.
+\medskip
+%\paragraph{Interpretation of the figure.}
+Figure~\ref{fig:a2-first} illustrates that Remove First Edge prunes edges early within the UI cluster, transforming the privacy settings panel from a fine-grained to a compressed form. As a result, paths leading to many optional outcomes are either removed or activated only through global acceptance. While this reduces the number of clicks, it simultaneously diminishes user control and overall system coverage.
+
+
+
+
+
+
+\clearpage
+\begin{figure*}[p]
+ % \centering
+  \includegraphics[
+    width=0.85\paperwidth,      
+    height=0.96\paperheight,    
+    keepaspectratio
+  ]{img/Remove First EdgeA1.pdf}
+\caption{\textbf{A1 – \texttt{Remove First Edge}}.}
+  \label{fig:a2-first}
+\end{figure*}
+\clearpage
+
+
+\newpage
+%------------
+
+\subsection{A2 – Remove Random Edge}
+\label{sec:a2}
+
+
+
+
+
+%\paragraph{What it computes.}
+The Remove Random Edge algorithm performs non-deterministic edge elimination.
+Instead of following a structural or cost-based heuristic, it randomly selects an edge from the set of all available edges
+and removes it from the graph. This process is repeated until a predefined proportion of edges has been deleted.
+Because of the stochastic nature of this method, each run can yield slightly different graph topologies.
+
+%\paragraph{Why it matters for our problem.}
+This algorithm models the uncertainty of user interactions and external consent-related events,
+where connections may break or change without deliberate optimization.
+In the context of consent management, it simulates accidental user choices or unpredictable UI simplifications,
+allowing us to assess the robustness of the consent graph under random perturbations.
+
+%\paragraph{How to read Figure~\ref{fig:a1-random}.}
+Figure~\ref{fig:a1-random} visualizes the result of applying A2.
+Red dashed edges mark the connections removed at random.
+Unlike A1, where deletions were concentrated in the upper UI cluster,
+A2 produces a scattered pattern of red edges across multiple layers of the graph.
+
+\begin{enumerate}
+    \item{UI cluster (top):}  
+    Several toggles (\texttt{Accept SupportChat}, \texttt{Accept Payments}, \texttt{Accept Personalization},
+    \texttt{Accept Analytics}, \texttt{Accept External media}) have lost edges at random points.
+    The effect is non-systematic—some fine-grained toggles remain, while others disappear entirely.
+    This mirrors the irregular degradation of user interface options under uncontrolled simplification.
+
+    \item{Link to \texttt{Consent saved}:}  
+    Some connections between the modal and the \texttt{Consent saved} node have been randomly removed,
+    resulting in unpredictable detours or dead ends.
+    The user may reach the saving state through fewer, less consistent routes.
+
+    \item{Outcomes/Capabilities(right):}  
+    Random removals in this region disconnect specific consent outcomes
+    such as \texttt{Payments}, \texttt{External media}, and \texttt{Analytics}.
+    Because the removals are not guided by utility or weight,
+    the resulting accessibility pattern is uneven: some optional capabilities remain reachable,
+    while others become isolated.
+\end{enumerate}
+
+%\paragraph{Structural and practical effects.}
+%\textit{Reachability:} 
+Random deletion can fragment the consent graph unpredictably,
+sometimes severing critical connections and sometimes leaving major paths intact.  
+%\textit{Click cost:} 
+On average, the expected path length decreases slightly,
+but the variance of path length increases because each random configuration produces different traversal costs.  
+%\textit{Utility and compliance:}
+The absence of a clear selection policy can lead to inconsistent user experiences,
+potentially violating usability expectations even if privacy principles are formally preserved.
+
+%\paragraph{Interpretation of the figure.}
+Figure~\ref{fig:a1-random} shows that A2 introduces a high degree of structural randomness.
+The scattered red edges illustrate a non-uniform simplification of the consent UI,
+where some categories remain accessible while others disappear arbitrarily.
+This random pruning demonstrates how unplanned changes to consent interfaces
+can reduce predictability for both users and developers.
+
+
+
+\begin{figure}[p]
+  %\centering
+  \includegraphics[
+    width=0.85\paperwidth,      
+    height=0.96\paperheight,
+    keepaspectratio]{img/Remove random edgeA2.pdf}
+  \caption{\textbf{A2 – \texttt{Remove Random Edge}}.}
+  \label{fig:a1-random}
+\end{figure}
+
+\newpage
+
+%----------
+
+
+\subsection{A3 – Brute Force}
+\label{sec:a3}
+
+
+The Brute Force algorithm performs an exhaustive search over all possible edge-removal combinations within the consent graph.
+For each candidate configuration, it computes the resulting click cost and reachability of essential and optional nodes.
+By evaluating every possible subset of edges, the algorithm guarantees the discovery of the configuration that minimizes
+the total user interaction effort without breaking required consent dependencies.
+
+%\paragraph{Why it matters for our problem.}
+This approach serves as the theoretical benchmark for all other algorithms.
+While heuristics like Remove First Edge or Remove Random Edge apply local or probabilistic rules, Brute Force provides an exact lower bound on achievable simplification.
+It identifies how much the consent flow can be reduced while still maintaining a complete and compliant user experience.
+
+%\paragraph{How to read Figure~\ref{fig:a5-bruteforce}.}
+Figure~\ref{fig:a5-bruteforce} visualizes the outcome of the exhaustive evaluation.
+The two red dashed edges indicate the only edges removed after testing all possible combinations.
+Specifically, the edges removed are:
+\begin{itemize}
+    \item From \texttt{Accept all (modal)} to \texttt{Consent saved.}
+    \item From \texttt{Privacy settings (modal)} to \texttt{Save (apply selected)}.
+\end{itemize}
+These deletions eliminate redundant shortcuts that previously allowed direct or duplicate access to the saving process.
+
+\begin{enumerate}
+    \item{UI cluster (top):}  
+    The two red edges lie within the modal region, connecting the settings interface directly to consent-saving actions.
+    By removing these shortcuts, the graph enforces that all saving operations occur through explicit user toggles rather than automatic jumps.
+    This preserves full visibility and control for the user while preventing accidental consent submission.
+
+    \item{Links to outcome nodes (right):}  
+    All service categories---\texttt{SupportChat}, \texttt{Payments}, \texttt{Personalization}, \texttt{Security},
+    \texttt{Analytics}, and \texttt{External media}---remain fully reachable.
+    No functional path to an outcome node has been lost.
+
+    \item{Overall pattern:}  
+    The near absence of red edges demonstrates that the algorithm performed an extremely conservative simplification.
+    It prunes only the non-essential direct transitions in the saving workflow, leaving the rest of the graph intact.
+\end{enumerate}
+
+
+Every essential and optional node remains accessible through at least one valid path.  
+Click cost slightly reduced, as redundant saving shortcuts have been removed.  
+%\textit{Utility and compliance:}
+The removal improves transparency by ensuring that consent is saved only after explicit user confirmation, aligning with privacy-by-design principles.
+
+
+Figure~\ref{fig:a5-bruteforce} shows that Brute Force optimization removes only the minimal set of redundant edges that do not contribute to new outcomes.
+By doing so, it achieves the smallest structural change required for measurable efficiency gain.
+Compared to Remove Random Edge, Remove First Edge algorithms, this exhaustive approach yields the cleanest and most privacy-preserving simplification of the consent graph.
+
+
+
+
+
+\begin{figure}[p]
+  %\centering
+  \includegraphics[
+    width=0.85\paperwidth,     
+    height=0.96\paperheight,    
+    keepaspectratio]{img/Brute ForceA3.pdf}
+  \caption{\textbf{A3 – \texttt{Brute Force}}.}
+  \label{fig:a5-bruteforce}
+\end{figure}
+
+\newpage
+%----------------
+
+%-----------------
+\subsection{A4 – Remove Min Cuts}
+\label{sec:a4}
+
+
+
+
+The Remove Min-Cut (Weighted) algorithm identifies the minimum-weight cut
+between the UI  entry node and the terminal consent state.
+Each edge in the consent graph is assigned a weight proportional to its frequency,
+importance, or cost (e.g., the number of user interactions required).
+The algorithm computes a cut-set of minimal total weight whose removal disconnects
+non-essential or redundant paths from the graph.
+In contrast to the unweighted variant, the weighted version prefers to remove
+less important or infrequently used connections rather than purely structural ones.
+
+
+This algorithm provides a realistic trade-off between optimization and usability.
+While a pure min-cut may remove any minimal set of edges,
+the weighted version reflects the actual relevance of each connection in the consent process.
+By removing low-weight (low-importance) edges, the algorithm achieves simplification
+without eliminating critical consent or compliance paths.
+It therefore models a policy-aware optimization that minimizes redundancy
+while preserving user access to required services.
+
+%\paragraph{How to read Figure~\ref{fig:a3-mincut}.}
+Figure~\ref{fig:a3-mincut} visualizes the weighted min-cut result.
+Red dashed edges indicate the edges removed by the algorithm.
+The removed edges span multiple layers of the graph:
+\begin{enumerate}
+  \item{UI cluster (top).}
+  Several connections from \texttt{Privacy settings (modal)} and \texttt{Accept all}
+  toward service toggles and consent-saving actions are cut.
+  This limits unnecessary direct links that bypass intermediate confirmation steps.
+  \item{Page layer (left).}
+  Numerous red edges originate from content pages such as
+  \texttt{Audiobooks}, \texttt{Digital Magazine}, \texttt{Membership},
+  and \texttt{Search Books}, each of which previously connected directly to
+  consent-requiring services.
+  Their removal enforces that access to analytics or external media
+  must go through explicit consent first.
+  \item{Outcome layer (right).}
+  Many \texttt{require(\*)} edges leading to outcome nodes
+  (\texttt{Analytics}, \texttt{Security}, \texttt{External media},
+  \texttt{Personalization}, \texttt{Payments})
+  have been removed.
+  These were low-weight, redundant edges that did not affect
+  essential system functions but contributed to user click overhead.
+\end{enumerate}
+
+%\paragraph{Structural and practical effects.}
+%\textit{Reachability:} 
+Most optional and redundant routes are cut,
+but all essential and policy-critical paths remain connected.
+The resulting graph is leaner but still functionally complete.  
+%\textit{Click cost:} 
+Average click cost is significantly reduced,
+since many indirect ``require'' dependencies have been pruned.  
+%\textit{Utility and compliance:}
+The algorithm improves usability
+by removing clutter while maintaining compliance with
+data-protection requirements—consent can still be given and stored
+through explicit and essential actions only.
+
+%\paragraph{Interpretation of the figure.}
+Figure~\ref{fig:a3-mincut} demonstrates how the weighted min-cut algorithm
+produces a broad yet controlled simplification of the consent graph.
+Rather than removing one specific shortcut, it strategically eliminates
+low-importance connections throughout the graph.
+This leads to a well-balanced structure where core services remain reachable,
+but redundant or rarely used consent dependencies disappear.
+The result is a globally optimized consent model that reduces user effort
+without compromising transparency or legality.
+
+
+
+
+\begin{figure}[p]
+  %\centering
+  \includegraphics[
+    width=0.85\paperwidth,      
+    height=0.96\paperheight,    
+    keepaspectratio]{img/RemoveMin-cutweightedA4.pdf}
+  \caption{\textbf{A4 – \texttt{Remove Min Cuts}}.}
+  \label{fig:a3-mincut}
+\end{figure}
+
+%Weighted
+\newpage
+%------------
+
+\subsection{A5 – Remove MinMC}
+\label{sec:a5}
+
+
+
+
+
+
+
+
+
+
+
+The Remove Min-Cut (Greedy Multi-Cut) algorithm identifies the smallest number of
+edges whose removal disconnects unwanted or redundant consent-saving routes. It
+operates across multiple start–target pairs, searching for minimal edge cuts that
+prevent unintended automatic transitions while keeping all legitimate consent paths
+reachable. In this way, the algorithm enforces that consent can only be stored through
+explicit, user-initiated actions rather than implicit or automatic triggers.
+
+In this case, the algorithm removed two red dashed edges, as shown in Figure~5.5:
+\medskip
+\begin{itemize}
+    \item \texttt{From Entry (first visit) to  Banner (toast)}
+    \item \texttt{From Save (apply selected) to Consent saved}
+\end{itemize}
+\medskip
+The first removal disconnects the automatic display of the consent banner on page
+entry, requiring the user to initiate interaction before any consent choices appear.
+The second removal blocks the shortcut from the \texttt{Save (apply selected)} button to
+\texttt{Consent saved}, ensuring that consent is only finalized through a confirmed action
+(such as \texttt{Accept all}) rather than during intermediate adjustments.
+\medskip
+
+1. UI cluster (top). Both removed edges lie within the user-interface layer.
+While the banner and modal structure remain intact, the removal of the automatic
+entry trigger and direct save shortcut ensures that user interaction is explicit rather
+than passive.
+
+2. Outcome layer (right). All service outcomes—such as \texttt{Payments},
+\texttt{Analytics}, and \texttt{Security}—remain reachable, but the final consent state now
+depends on deliberate confirmation paths instead of automated transitions.
+
+The algorithm introduces minimal change but strong
+semantic impact. By removing only two edges, it guarantees that consent cannot be
+displayed or stored without user intent. This improves compliance with data-protection
+principles by eliminating automatic triggers while keeping the overall interaction
+flow clear and familiar.
+\medskip
+
+Figure~5.5 demonstrates that even small, targeted cuts can meaningfully improve
+the logic and transparency of consent management. Compared with previous
+algorithms, Remove Min-Cut (Greedy Multi-Cut) offers a balanced trade-off between
+graph simplicity and policy enforcement, achieving safer consent handling with
+minimal structural disruption.
+
+
+
+
+
+\begin{figure}[p]
+ % \centering
+  \includegraphics[
+    width=0.85\paperwidth,      
+    height=0.96\paperheight,   
+    keepaspectratio
+  ]{img/Remove-min cutA5.pdf}
+  \caption{\textbf{A5 – \texttt{Remove MinMC}}.}
+  \label{fig:a4-minmc}
+\end{figure}
+
+\newpage
+%--------------
+\subsection*{Click-cost measurement}
+For each algorithm we compute path costs \emph{before} and \emph{after} using the edge-label rules introduced in Section~\ref{sec:specifications}. We record:
+
+
+\vspace*{\baselineskip}
+
+
+\begin{itemize}
+  \item \textbf{Per-pair details}: Consent/total cost before/after, deltas, and the actual paths.
+  
+ \item \textbf{Per-algo summary}: Total removed edges vs remaining edges, how many pairs were comparable, how many improved/worsened/stayed the same, and how many were disconnected.
+\end{itemize}
+
+\subsection*{Design comparison (no deletions)}
+
+For design comparison, two additional graph variants were evaluated against the baseline (G0): 
+G1 (Quick-Consent shortcuts) and G1b (Quick-Consent with auto-apply and implicit first use). 
+The same path-cost computation used for deletion experiments was applied to both variants, 
+and the resulting deltas in consent clicks and total clicks are reported in the results section.
+%-------
+%\newpage
+
+
+
+%----------
+
+\section{Tests and Measurements}
+\label{sec:measurements}
+
+\subsection*{Test set}We evaluate all defined \texttt{start} nodes against all \texttt{outcome} nodes. This covers the banner flow, the “manage cookies” flow from each page, granular toggles in the modal, and the accept-all path.
+
+\subsection*{What we record for each experiment}
+\begin{itemize}
+  \item \textbf{Connectivity and deletions} — removed edge lists and on-path/off-path counts; any start$\to$outcome pair that becomes disconnected.
+  \item \textbf{Click metrics} — consent and total clicks before/after, per-pair deltas, and summaries per algorithm or design variant.
+  \item \textbf{Visual inspection} — overlay/after figures for each algorithm to confirm which parts of the journey were affected.
+\end{itemize}
+
+\subsection*{Compliance notes}
+All design changes preserve privacy defaults: non-essential services are OFF until explicit intent; auto-apply simply removes redundant “save” steps; implicit first use records consent at the moment of attempted use and must be accompanied by immediate opt-out.
+
+\medskip
+
+
+

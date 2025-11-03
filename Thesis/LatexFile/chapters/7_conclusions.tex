@@ -1,0 +1,65 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+\chapter{Conclusion and Outlook}
+\label{chapter:conclusion}
+
+\section{Conclusion}
+
+Cookie consent has become one of the most visible and repetitive parts of using the internet today. Almost every visit to a website begins with a banner asking users to accept or reject cookies. These banners were introduced to meet legal requirements under regulations such as the General Data Protection Regulation (GDPR) and the ePrivacy Directive. However, instead of empowering users, they often lead to fatigue, confusion, and frustration. Many users accept all cookies simply to access the website faster, while website providers struggle to remain compliant without disrupting usability.
+
+In this thesis, we approached this common problem from a technical and structural point of view. Rather than analyzing legal text or visual design alone, I modeled consent interactions as graphs. In these graphs, each node represented a state of the user or a part of the interface—such as the banner, the modal, or the “accept” button—and each edge represented an action the user could take, such as clicking, navigating, or confirming a choice. This way, the consent process could be studied as a sequence of transitions between states, not just as a static screen. The main question was, how can graph-theoretic models be used to enforce user consent within cookie-based
+systems, while preserving system utility and adhering to privacy constraints?
+
+To explore this idea, we built a prototype website called \textit{Open Library}. We used a Content Management System (CMS) to manage its content, because many real websites also rely on CMS frameworks to organize pages and services. This decision made the prototype simple enough to control, yet realistic enough to reflect an actual web environment. Inside this website, I implemented a cookie consent mechanism using Klaro, an open-source Consent Management Platform (CMP). This CMP allowed me to simulate real cookie dialogs, record user actions, and later turn those interactions into a graph for analysis. The graph represented how users moved through different consent options—from the initial banner, through the modal and settings, to the final consent state.
+
+Once the system was set up, we applied five graph algorithms originally proposed by Konstantinidis et al.: \texttt{RemoveFirstEdge}, \texttt{RemoveRandomEdge}, \texttt{BruteForce}, \texttt{RemoveMinCuts}, and \texttt{RemoveMinMC}. Each algorithm removed edges from the graph in a different way, representing a different strategy for simplifying the consent process. For example, some algorithms removed the first edge in every path, while others calculated minimum cuts or tested combinations of edges. The goal was to see how each approach would affect the structure of the consent graph, the reachability of outcomes, and the number of clicks needed to reach a valid consent state.
+
+The results showed that simply deleting edges is not always helpful. In the baseline graph (G0), where the algorithms were applied directly to the full consent graph, many paths were broken, and users could no longer reach valid outcomes. This showed that removing steps without understanding their meaning can damage the consent flow instead of improving it. In other words, structure alone is not enough.
+
+In the next version (G1), I introduced “Quick Consent” mechanisms such as inline prompts and simplified routes. These design changes made navigation smoother and reduced the total number of clicks required to reach the main content. However, the number of consent-related clicks—the actions that actually involved giving or denying consent—remained unchanged. Users still had to explicitly press “Save” to finalize their preferences.
+
+The most significant transformation occurred in G1b. In this version, the meaning of the click changed. With \textit{auto-apply}, each toggle immediately applied and saved the user’s choice. With \textit{implicit-first-use}, the first interaction with a service automatically stored consent. These adjustments reduced the number of consent clicks and made the paths much shorter. The result was a smoother and more direct user experience. However, this improvement came with a trade-off: users lost part of their explicit control, since some actions automatically stored consent without a clear confirmation. This finding underlined a key insight—usability can be improved, but only if user control and transparency remain protected.
+
+Comparing the three models (G0, G1, and G1b) side by side shows an important progression. G0 represents pure structural change, which can make systems unstable or unusable. G1 introduces UI-level optimization, which improves flow without changing logic. G1b, in contrast, modifies the semantics of interaction and achieves the strongest improvement. Taken together, these models reveal that semantic change is more effective than structural change. The main insight of this work is that progress in consent design does not come from removing paths, but from rethinking what each action means and how consent is applied.
+
+These experiments also demonstrate how technical methods and human-centered thinking can complement each other. The graph models provided a measurable and visual way to understand user paths, but the interpretation of results required awareness of human behavior and privacy ethics. The study confirms that while algorithms can simplify complexity, they cannot decide what is fair or trustworthy. A consent interface that is technically efficient but manipulative or confusing cannot be considered successful. Real improvement happens when efficiency and ethics move together.
+
+Working with the \textit{Open Library} prototype also proved valuable. The system was small enough to control every part of the setup but realistic enough to represent real-world websites. Using a CMS made it easy to manage pages, content, and user data, while Klaro provided a working consent interface that could be connected to the database. This setup allowed precise experimentation and transparent results. It also showed that small-scale prototypes can be a powerful way to study complex privacy systems.
+
+Beyond the direct results, this project contributes methodologically. Representing consent as a graph made it possible to connect algorithmic reasoning with design practice. It showed how abstract principles such as “informed consent” can be represented as measurable structures. This approach could also be applied to other privacy-related problems—for example, to study how users interact with privacy settings, personalization options, or data-sharing permissions.
+
+The study demonstrates that algorithmic simplification can enhance efficiency, yet its real value emerges when complemented by human-centered design principles. In this way, technical optimization and ethical transparency can reinforce each other rather than compete. Algorithms can identify where paths can be shortened, but they cannot replace human understanding. A consent interface is not just a system of clicks—it is also a communication of trust, responsibility, and respect between a website and its users. Future consent systems should therefore be designed not only for efficiency, but also for meaning.
+
+Overall, this thesis shows that graph-based models provide a new way to analyze and improve cookie consent systems. They make it possible to measure user effort, visualize complexity, and experiment with different interaction patterns in a structured way. By applying algorithms to these models, we can identify where unnecessary complexity exists and how to reduce it. At the same time, the work emphasizes that technology alone cannot solve consent fatigue. The design of consent systems must always consider the user’s perspective, emotions, and sense of control.
+
+In conclusion, the research demonstrated that graph algorithms can serve as powerful analytical tools for studying consent interaction. The five algorithms helped uncover structural weaknesses, highlight the importance of semantic design, and show that real optimization depends on the meaning of actions, not their number. This understanding connects technical reasoning with ethical responsibility. Consent should not be a repetitive legal obstacle, but a transparent and empowering interaction that evolves from a frustrating pop-up into a meaningful part of the web experience—one that respects both privacy and usability.
+
+
+
+
+
+%\chapter
+\medskip
+\section{Outlook}
+\label{chapter:Future Work}
+
+\medskip
+%\textbf{Future Work.}
+
+
+In our work we focused on keeping the setup simple, so that the main ideas would be easy to see. At the same time, this simplicity leaves many interesting directions for the future. One clear step forward is to look more closely at how different actions feel to users. In our graphs, every click was counted the same, but in practice some are almost effortless while others require more time and attention. For example,
+pressing an “accept all” button is quick, while opening settings and making several choices takes much more effort. If future work gives different weights to these interactions, the model could become closer to what users actually experience.
+
+It is also important to move from simulation to real people. Our results came from graphs and algorithms, but we do not yet know how users themselves would react to the changes. Simple experiments, such as A/B tests that compare a standard consent banner with an optimized version, could show whether people notice improvements and whether they feel more in control. Such studies could also give answers to
+questions that are not visible in the graph, like whether a design increases trust or makes the consent options easier to understand.
+
+Another direction is to try the method on other types of websites. The Open Library was a useful starting point, but online shops, news portals, or social media platforms all have different structures and different types of services. Some rely on advertising, others on payments or personalized feeds. Testing the graph-based approach in these settings could show how general the findings are and what new challenges appear in practice.
+
+We also see a lot of potential in automating the process. In this thesis, we built the graphs by hand, which was fine for one website but would not work for larger studies. A future tool could automatically scan a website, detect the consent steps, and generate the graph directly. Combined with the algorithms, this could give instant feedback to developers about whether their consent design is user-friendly and
+compliant. In the long run, such automation could even be part of standard development tools.
+
+Finally, the broader context should not be ignored. Accessibility rules in Germany and the EU now require websites to use clear and simple language, and consent dialogs need to follow these standards as well. Mobile devices add another layer, since here users interact not only with clicks but also with scrolling, swiping, and gestures.
+Cultural and legal differences also matter: while our study was shaped by GDPR, other regions such as the US or Asia follow different rules and user expectations. Exploring these aspects would make the approach richer and more widely applicable.
+
+Overall, there are many paths for future work, from technical improvements such as weighted clicks and automation, to practical extensions with user studies, new website types, and broader social and legal contexts. What unites them is the idea that cookie consent should not only be about compliance, but also about creating an experience that users can understand, trust, and accept without frustration. We hope that future studies will take these ideas further and show how consent can evolve into a part of the web that is both respectful and easy to use.

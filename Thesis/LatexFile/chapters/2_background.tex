@@ -1,0 +1,630 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_GB
+% !TeX root = ../thesis.tex
+
+\chapter{Background}
+\label{chapter:background}
+The exponential growth of the internet and web-based services has dramatically increased the amount of personal data collected, processed, and stored by organizations worldwide. This digital transformation has brought about significant benefits in terms of convenience, personalization, and connectivity, but it has also introduced new risks and challenges related to user privacy~\cite{krishnamurthy2009privacy}. The rise of data-driven business models, targeted advertising, and pervasive online tracking has heightened public awareness and concern about how personal data is used and protected.
+\\
+This section introduces the formal and technical building blocks that underpin our approach to modeling and simplifying cookie-consent workflows in web applications. It provides concise definitions of five core concepts: cookies as technical tools for storing user data; consent as a legal and behavioral mechanism; Consent Management Platforms (CMPs), which present consent dialogs/banners and record user preferences; Content Management Systems (CMSs), which deliver site content and integrate a CMP; and graph-theoretic models as a formalism for representing user-interaction paths. Together, these concepts establish the theoretical and architectural basis for the graph-based methods explored in later chapters.
+
+
+
+
+
+\section{Cookies}
+\label{sec:cookies}
+
+Cookies are small text-based data fragments stored on a user’s browser by web servers to maintain stateful information across sessions. Originally introduced in the mid-1990s for enabling shopping carts in early e-commerce platforms \cite{kristol2001http}, cookies have evolved to support a wide range of web functionalities, including session tracking, user personalization, analytics, and advertising.
+
+
+\subsection{Structure and Classification of Cookies}
+\label{sec:cookies-structure}
+
+Technically, a cookie consists of a name-value pair and optional attributes such as expiration time, domain, path, and security flags (e.g., \texttt{Secure}, \texttt{HttpOnly}).
+%\newpage
+Cookies can be broadly classified as follows:
+
+\begin{itemize}[leftmargin=*]
+
+\item \textbf{Session Cookies:} A session cookie is a temporary cookie that is erased when the user closes their web browser. They are commonly used to store information that is needed only for the duration of a browsing session, such as authentication status or temporary preferences
+\cite{kristol2001http}. 
+\end{itemize}
+
+\begin{minted}[frame=single]{javascript}
+// This cookie will be deleted when the browser is closed
+document.cookie = "sessionId=abc123; path=/";
+\end{minted}
+
+\captionof{listing}{Example of a session cookie (no Expires/Max-Age) \cite{GakusenCookies_BibTeX}.}
+\label{lst:session-cookie}
+
+\vspace{1\baselineskip} 
+
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Persistent Cookies:} A persistent cookie (also called a "permanent cookie" or "stored cookie") is a cookie that is stored on a user's device for a set period of time, even after the browser is closed.\\
+ Persistent cookies have an explicit expiration date or a maximum age attribute, and are used to remember information, preferences, or login status across sessions~\cite{kristol2001http}.
+
+
+\begin{listing}[htbp]
+\begin{minted}[frame=single,breaklines,breakanywhere,fontsize=\normalsize]{javascript}
+// This cookie will expire in 30 days
+document.cookie = "userId=xyz789; path=/; expires="
+  + new Date(Date.now() + 30*24*60*60*1000).toUTCString();
+\end{minted}
+\caption{Example of a persistent cookie (expires in 30 days)~\cite{GakusenCookies_BibTeX}.}
+\label{lst:persistent-cookie}
+\end{listing}
+
+  \item \textbf{First-Party Cookies:} First-party cookies are set by the domain that the user is currently visiting. In contrast, third-party cookies are set by domains other than the one shown in the address bar \cite{acar2014web}.
+
+ \begin{listing}[htbp]
+\begin{minted}[frame=single,breaklines,fontsize=\normalsize]{javascript}
+// On example.com
+document.cookie = "userPref=darkmode; path=/";
+\end{minted}
+\caption{Setting a first-party cookie on \texttt{example.com} with site-wide scope (\texttt{Path=/}).}
+\label{lst:firstparty-darkmode}
+\end{listing}
+\noindent This cookie is only accessible to scripts and requests from \texttt{example.com}.
+\vspace{0.6\baselineskip} 
+
+  \item \textbf{Third-Party Cookies:} Third-party cookies are cookies that are set by a domain other than the one the user is currently visiting. These cookies are typically set by external services (such as advertisers, analytics providers, or social media widgets) embedded on the website, and are used for tracking users across different sites \cite{Mayer2012}.
+\end{itemize}
+
+\begin{listing}[htbp]
+\begin{minted}[frame=single,breaklines,fontsize=\normalsize]{javascript}
+// Loaded from a third-party domain in an iframe or script
+document.cookie = "affiliateId=abc123; domain=tracker.com; path=/";
+\end{minted}
+\caption{Setting a cookie for \texttt{tracker.com} (third-party context).}
+\label{lst:thirdparty-cookie}
+\end{listing}
+
+\noindent This cookie is only accessible to \texttt{tracker.com}, not \texttt{news.example.com}.
+
+\subsection{Cookie Mechanism and Usage}
+\label{sec:cookies-mech}
+
+When a user visits a web page, the server may include a \texttt{Set-Cookie} header in the HTTP response. The browser stores this data locally and includes it in the \texttt{Cookie} header of subsequent requests to the same domain . For instance:
+
+\begin{itemize}
+  \item \texttt{Set-Cookie: sessionID=abc123; Path=/; Secure; HttpOnly}
+  \item \texttt{Cookie: sessionID=abc123}
+\end{itemize}
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.80\textwidth]{img/sysnew1.png}
+  \caption{Workflow of cookie creation and usage between browser and server}
+  \label{fig:cookie-workflow}
+\end{figure}
+
+
+This mechanism allows servers to identify returning users and maintain state, such as keeping a user logged in.
+
+
+
+
+\subsection{Applications of Cookies}
+\label{sec:cookies-apps}
+
+Cookies play a crucial role in enabling a wide range of web functionalities that enhance both user experience and site operations. One of their primary uses is to maintain login sessions, allowing users to remain authenticated as they navigate between pages without repeatedly entering their credentials~\cite{kristol2001http}. Additionally, cookies are commonly used to store user preferences, such as language selection and visual themes, ensuring that websites can deliver a personalized experience tailored to individual users~\cite{MDN}.
+
+In the context of e-commerce, cookies are essential for managing shopping carts, as they allow items selected by users to be retained across multiple browsing sessions and page visits. Beyond these convenience features, cookies also facilitate analytics and behavioral tracking, enabling website owners to gather data on user interactions and improve site performance. Furthermore, cookies underpin targeted advertising by allowing advertisers to deliver personalized ads based on users’ browsing history and preferences~\cite{Englehardt2016}.
+
+
+
+\subsection{Privacy Implications and Legal Frameworks}
+\label{sec:cookies-privacy}
+
+Cookies, especially third-party ones, raise significant privacy concerns due to their ability to track users across websites without informed consent \cite{Englehardt2016}. In response, legal frameworks such as the \textbf{General Data Protection Regulation (GDPR)}  \cite{utz2020cookiebanner} and the \textbf{ePrivacy Directive}~\cite{Degeling2019} require explicit user consent before setting non-essential cookies.
+
+According to the GDPR, consent must be freely given, specific and informed, and unambiguous and affirmative~\cite{GDPR}.
+
+
+Despite legal requirements, many websites employ deceptive design patterns (dark patterns) in cookie banners to manipulate user decisions \cite{nouwens2020darkpatterns}.
+
+This thesis treats "cookies" as the technical foundation of user tracking and preference storage in web applications. Since consent decisions on the web are ultimately implemented through these cookie mechanisms, understanding their structure and behavior is essential for designing privacy-compliant consent workflows. The optimization framework proposed in this work—aimed at reducing consent fatigue and simplifying user interactions—builds upon how cookies are created, categorized, and controlled across different layers of a consent workflow.
+
+
+
+
+
+
+\section{Consent}
+\label{sec:consent}
+
+Consent is a fundamental principle in digital data governance, having evolved from a simple checkbox to a complex socio-technical construct. In the context of digital environments, consent is not only a legal requirement but also a multifaceted challenge involving legal, behavioral, and technical dimensions. According to Article 4(11) of the General Data Protection Regulation (GDPR), consent is defined as “any freely given, specific, informed and unambiguous indication of the data subject’s wishes by which they, by a statement or by a clear affirmative action, signify agreement to the processing of personal data”~\cite{GDPR}. This definition emphasizes four essential criteria: freedom of choice, specificity, informedness, and unambiguity. If these criteria are not met—such as when consent is bundled with mandatory services or when it is difficult to refuse—then the resulting agreement cannot be considered valid.
+The authenticity of consent is closely linked to the design of user interfaces. The GDPR requires that consent must be as easy to withdraw as it is to give, and that users must not suffer negative consequences for withdrawing consent. In practice, however, mechanisms for revocation are often hidden or unintuitive, making it challenging for users to exercise their rights. The European Data Protection Board (EDPB)\cite{GDPR} further clarifies that consent must be both demonstrable and reversible, requiring organizations to implement systems that allow for traceable records and accessible revocation options.
+
+From a technical perspective, implementing effective consent mechanisms involves balancing legal obligations with usability and system efficiency. Privacy-by-design approaches advocate for embedding consent as a default feature, utilizing modular Consent Management Platforms (CMPs), consent receipts, and metadata tagging of user preferences. Despite these frameworks, challenges persist in ensuring transparency, synchronizing consent states across distributed systems, and reconciling usability with legal requirements. Even when compliant interfaces are deployed, users may still misunderstand what they are consenting to, highlighting a persistent gap between legal theory and practical user comprehension.
+
+While much of the discussion around consent focuses on web applications, its significance is increasingly recognized in other digital domains, underscoring the need for ongoing research and innovation in consent management.
+
+
+
+Beyond web applications, consent plays an increasingly critical role in a variety of domains, including health informatics, where informed consent is foundational for ethical medical research and patient data governance and regulates the collection, processing, and sharing of biometric, genetic, and clinical data ~\cite{Shabani2018}; artificial intelligence (AI), where consent governs the use of personal data to train models, particularly in systems involving user profiling or behavioral prediction ~\cite{Mittelstadt2016}; mobile ecosystems, where smartphones and mobile apps depend on user consent to access sensitive features and where background data collection and third-party SDKs further complicate compliance~\cite{Zang2015}; smart homes and IoT, where devices such as voice assistants and wearables often rely on implicit or indirect forms of consent, requiring contextual and tiered consent frameworks~\cite{Zeng2017}; and education technology, where platforms for minors require explicit parental consent and must comply with regulations such as the GDPR and the Children’s Online Privacy Protection Act (COPPA)\cite{COPPA,Livingstone2018}.
+
+
+These diverse and expanding applications demonstrate that consent is no longer limited to simple cookie pop-ups but has become a systemic requirement in the design of ethical, user-respecting digital infrastructure. It functions not only as a legal mechanism but also as a dynamic interface between users, technology, and society.
+
+User "consent" is the legal and ethical cornerstone of this thesis. As modern privacy laws demand that consent be informed, explicit, and freely given, this research seeks to formally model the consent collection process. By representing consent as a series of user decisions encoded in graph structures, the goal is to analyze and optimize the paths users take when interacting with consent interfaces.
+
+
+
+
+
+
+\subsection{Consent Management Platforms (CMPs)}
+\label{sec:cmps}
+
+Consent Management Platforms are essential tools for implementing legal frameworks such as the General Data Protection Regulation (GDPR) and the ePrivacy Directive. Their core function is to serve as an interface between users and service providers, allowing for the collection, storage, and management of user consent regarding the processing of personal data. Contrary to popular belief, CMPs are not merely visual cookie banners; they consist of multiple technical components, including a user interface for displaying consent options, a backend for storing preferences, and APIs for communicating with third-party services.
+
+CMPs typically present users with categorized information about different types of cookies, their processing purposes, and the third parties involved. These platforms often use multi-layered interfaces—such as expandable panels or “advanced settings” menus—enabling users to accept or reject data processing on a per-purpose or per-vendor basis. As such, the user experience (UX) design of CMPs plays a crucial role in shaping the authenticity of the consent provided.
+
+Several studies, most notably those by Utz et al. (2019) and Nouwens et al. (2020), have shown that CMPs are frequently designed in ways that nudge users toward consent. The use of dark patterns—deceptive design strategies like visually dominant “Accept All” buttons and hidden or minimized “Reject” options—undermines the principle of freely given and informed consent required under Article 4(11) of the GDPR. As a result, while such interfaces may appear legally compliant, they fail to uphold the ethical and legal standards of meaningful user choice \cite{utz2020cookiebanner,nouwens2020darkpatterns}.
+
+Evaluating the legal legitimacy of CMPs reveals additional challenges. Many interfaces obscure or complicate the process of rejecting consent, placing the "Reject" button behind multiple interaction layers, while highlighting the "Accept All" option with vivid colors and central placement. This imbalance violates the GDPR's requirement for equally accessible choices and challenges the assumption that consent has been given voluntarily.
+
+A closer inspection of popular CMPs such as Cookiebot, OneTrust, and Quantcast Choice demonstrates that their design decisions are often geared more toward achieving legal coverage than facilitating genuine user consent. For instance, Cookiebot tends to bury consent customization settings in nested menus, while prominently featuring an “Allow All” button. OneTrust, widely used by multinational corporations, allows for more granular settings but defaults to a design that streamlines the acceptance path. Quantcast Choice similarly provides detailed controls but uses button placement, color hierarchy, and interface compression to lead users toward consent \cite{Degeling2019}.
+
+Additional CMPs, such as TrustArc, Usercentrics, Didomi, and Civic, are also widely deployed across industries. While all claim GDPR compliance, their default configurations often exhibit similar usability issues. In free or pre-configured versions, dark patterns are frequently enabled by default, and modifying them requires technical expertise and backend access—resources not readily available to small websites or non-expert administrators \cite{matthes_regulating_2021}.
+
+In addition to these commercial CMPs, Klaro offers an open-source alternative focused on transparency and flexibility.  Klaro allows full configuration through a lightweight JavaScript file and can be integrated directly into any website without external dependencies. Its open architecture makes it particularly suitable for research and experimental setups, as it enables developers to inspect, modify, and store user consent data in customized ways. In this thesis, Klaro serves as the consent management platform within the implemented system.
+
+In conclusion, while CMPs play a vital role in ensuring legal compliance, they risk becoming instruments of legal façade if not implemented with fairness, transparency, and user-centered design. A legitimate CMP must offer users the ability not only to accept but also to reject and continuously manage their preferences in a clear and equal manner. Only then can consent be considered both legally valid and ethically sound.
+
+Consent Management Platforms serve as operational bridges between legal consent requirements and technical implementation. In this thesis, CMPs are not only studied as interactive tools for users, but also structurally modeled as graphs to analyze how their design influences user behavior. The proposed approach applies graph path elimination algorithms to uncover and streamline consent journeys within the CMP interface.
+
+
+\subsection{Consent Management Systems (CMSs)}
+\label{sec:cms}
+
+Consent Management Systems
+ represent the back-end infrastructure necessary for organizations to ensure lawful, transparent, and user-respecting data processing in compliance with frameworks such as the General Data Protection Regulation (GDPR) and the ePrivacy Directive \cite{gdpr_text}. Unlike Consent Management Platforms, which primarily focus on the user-facing interface for collecting consent, CMSs offer the technical foundation for storing, auditing, updating, and revoking user consent throughout its lifecycle.
+
+A typical consent management system comprises several tightly integrated modules that manage the full lifecycle of user consent.
+A consent interface works with CMPs or internal UI components to capture users’ data preferences, often using layered screens and purpose-based choices to enable granular consent ~\cite{Degeling2019}. The captured choices are then persisted by a storage engine that records consent metadata in a secure, timestamped, and immutable form, supporting privacy-compliant logging via secure databases and cryptographic techniques; for interoperability, the Kantara Initiative’s Consent Receipt provides a structured format for storing and transmitting such data ~\cite{kantara_consentreceipt_2020}. On top of this, an audit and compliance layer produces trails and reports for supervisory authorities and thereby supports GDPR Article 7(1), which requires controllers to demonstrate that valid consent was obtained~\cite{Voigt2017}. Users can change their mind through a revocation and update service that enables real-time withdrawal and preference updates, aligning with GDPR’s emphasis on the ease of withdrawing consent (Recital 42)~\cite{gdpr_text}. Finally, an API gateway enforces consent and data-protection policies by mediating access to backend services and ensuring that external systems respect user preferences and regulatory requirements ~\cite{mazon2016api}.
+
+
+
+Distinction from Consent Management Platforms.these platforms are typically third-party or in-house tools that display consent banners and UI widgets to end users. Their scope is limited to presenting choices and capturing user input. However, a CMP without an underlying CMS cannot fulfill legal obligations, as it lacks the ability to store, validate, or revoke consent.
+
+For instance, while platforms like OneTrust or Cookiebot offer CMP functionality, the full integration into a CMS enables the logging of consent in back-end databases, distribution of consent states across systems, and long-term compliance reporting \cite{Degeling2019}. Thus, CMPs may be seen as the interface layer, whereas CMSs are the operational backbone \cite{matthes_regulating_2021}.
+
+\subsubsection{Data Storage, Processing, and Consent Lifecycle Management}
+A robust CMS ensures that user preferences are persistently stored in encrypted databases with versioning support, validated against processing policies before any action on personal data is taken, synchronized across distributed systems via event-driven architectures or microservice frameworks, and auditable so that organizations can produce detailed logs of when, how, and for what purpose consent was obtained, updated, or withdrawn.
+
+For example, a CMS implementation might include a PostgreSQL or MongoDB database with schema tables tracking user ID, consent status per data purpose, consent source (CMP or manual API input), timestamps, and revocation events \cite{matthes_regulating_2021}.
+\medskip
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.80\textwidth]{img/system4-3.png}
+    \caption{System architecture of a Consent Management System (CMS).}
+    \label{fig:cms-architecture}
+\end{figure}
+
+
+
+
+
+\noindent\textbf{Figure Explanation:}
+%\vspace*{\baselineskip}
+\medskip
+
+
+\textbf{Top Left: User Interface} \\
+The process begins with the User Interface (UI), where users interact with the system to set or modify their consent preferences.
+
+\textbf{Top Center: Consent Management System} \\
+The UI communicates directly with the Consent Management System (CMS), shown at the top center. This module acts as the central coordinator, receiving user input and orchestrating consent-related operations.
+
+\noindent\textbf{Center: Consent Lifecycle Management} 
+Below the CMS, the Consent Lifecycle Management module manages the entire lifecycle of user consent. This includes three primary functions:
+\begin{itemize}
+    \item \textbf{Store Consent Records (Left):} Securely storing user consent records in the database.
+    \item \textbf{Manage User Preferences (Center):} Handling ongoing user preferences related to data processing.
+    \item \textbf{Track Consent Expiry (Right):} Monitoring consent expiration to ensure compliance and prompt renewals when necessary.
+\end{itemize}
+
+\textbf{Bottom Left: Consent Database} \\
+The Consent Lifecycle Management module interfaces with the Consent Database (bottom left), where all consent records and related data are persistently stored.
+
+\textbf{Bottom Right: Data Processing Systems} \\
+On the bottom right, Data Processing Systems interact with the Consent Lifecycle Management module to validate user consent before any data processing activities occur.
+
+\subsection{Integration with Other Systems and Graph-Based Optimization}
+\label{sec:cms-integration}
+
+In advanced privacy-aware systems, such as those involving graph-based consent optimization, the CMS functions as the central registry of permissible user actions. For instance, when a user logs into a digital library platform and selects privacy preferences via a CMP, the CMS stores the selection. These preferences are then converted into constraints within a directed graph representing possible interaction paths through the application.
+
+Algorithms such as path pruning or edge removal can be applied to reduce redundant or unauthorized paths, ensuring that user flows respect privacy constraints. The CMS thus not only acts as a consent repository but also as a real-time decision engine for algorithmic enforcement.
+
+As highlighted by Filipczuk et al.~\cite{DBLP:conf/edbt/FilipczukG023}, the use of graph-theoretic models to represent consent workflows can significantly enhance transparency and accountability by embedding consent logic directly into the system’s operational flow. The CMS plays a vital role here, feeding valid constraints and consent states into the optimization logic.
+
+In the context of this thesis, the Consent Management System functions as the central infrastructure responsible for storing, updating, and managing user consent data in a structured and persistent way. Unlike traditional CMPs that rely on static, one-time interactions through cookie banners, CMS supports dynamic, ongoing consent tracking and integrates with graph-based models to analyze user navigation patterns. This dynamic architecture allows us to identify and optimize consent decision paths using elimination algorithms, reducing the number of required clicks while maintaining legal compliance and respecting user privacy. \\
+As such, CMS is not only a technical foundation for the project but also a practical means to implement and evaluate user-centric privacy design.
+
+\section{Static vs. Dynamic Consent Management Systems}
+\label{sec:static-dynamic}
+In the context of consent management in web applications, the terms “static” and “dynamic” refer to how systems process and respond to user choices over time.
+
+\textbf{Static system:} Static consent management systems typically collect consent as a one-time event—often through a cookie banner—and do not modify the user interface or experience based on those choices. Once consent is recorded, the system remains unchanged, offering limited personalization or responsiveness. Many traditional Consent Management Platforms, such as default implementations of Cookiebot or Quantcast Choice, exemplify this static approach~\cite{Degeling2019, Nouwens2020}.
+\\ 
+By contrast, \textbf{Dynamic systems:} dynamic consent management systems continuously process user choices and adapt their behavior in real time. Such systems can leverage graph-based models to represent user decisions as weighted edges, enabling algorithmic optimization of consent paths and adaptive flows that enhance both user experience and regulatory compliance~\cite{budin2017dynamic}. Dynamic systems not only track consent but also integrate it into interaction logic, allowing for ongoing updates and personalized consent journeys. This methodology, as proposed in this thesis, is inherently dynamic, as it continuously incorporates user preferences and optimizes decision paths accordingly.
+
+
+\section{Formal Definition and Role of Graphs in Cookie Consent Interaction Systems}
+\label{sec:graph-motivation}
+
+
+Graphs are among the most widely used and fundamental mathematical structures in computer science and software engineering~\cite{Cormen2009, Knuth1997}. They serve as an abstract model for representing binary relations between entities. In this thesis, directed graphs (digraphs) are employed to model user interactions with cookie consent systems, providing a rigorous foundation for analyzing and optimizing user paths~\cite{spiliopoulou1998wum}.
+
+
+\subsection{Mathematical Definition of a Directed Graph} 
+Formally, a directed graph \( G \) is defined as an ordered pair:
+\[
+G = (V, E)
+\]
+where:
+- \( V \) is a finite set of vertices (also called nodes), and
+- \( E \subseteq V \times V \) is a set of directed edges. Each edge \( (u, v) \in E \) represents a directed connection from vertex \( u \) to vertex \( v \).
+
+Note that in a directed graph, the presence of an edge \( (u, v) \) does not imply the presence of \( (v, u) \). Additionally, some graphs may contain weighted edges, where each edge has a numeric value or attribute associated with it~\cite{Diestel2017}.
+ 
+\subsection{Graph Properties}
+
+Graphs are versatile mathematical structures whose properties can be tailored to fit a wide range of application contexts in computer science and software engineering. The structural characteristics of a graph significantly influence its suitability for modeling different types of relationships and processes~\cite{Diestel2017, Cormen2009}.
+
+A graph may be classified as simple if it contains no duplicate edges or self-loops, ensuring each connection between nodes is unique. The distinction between directed and undirected graphs depends on whether the edges have a direction; in directed graphs (digraphs), edges represent ordered pairs, while in undirected graphs, edges represent unordered pairs~\cite{Diestel2017}. Weighted graphs assign numerical values to edges, representing quantities such as cost, probability, or importance, and are essential in applications like shortest path algorithms and network flow analysis~\cite{Cormen2009}.
+
+Other important properties include whether a graph is cyclic or acyclic, indicating the presence or absence of cycles, and whether it is connected or disconnected, referring to the ability to reach all nodes from any starting node. These properties are fundamental when analyzing user navigation, network reliability, and decision-making processes~\cite{Knuth1997}.
+
+In this thesis, we primarily use weighted directed graphs to represent user decision paths within a consent management workflow, as this structure allows for modeling and analysis of user interactions and system behavior.
+
+ 
+\subsection{Motivation for Graph-Based Modeling}
+Modeling user consent interactions as a graph provides a mathematically tractable
+representation of system elements and their relationships~\cite{Diestel2017, Cormen2009}. This
+approach enables detailed analysis and optimization of user decision paths and allows
+us to apply well-established graph algorithms to enhance user experience while ensuring
+compliance with data-protection regulations~\cite{Knuth1997}. Logical constraints and
+dependencies can be encoded as structural properties within the graph, offering a
+unified framework for both technical analysis and legal compliance (e.g., GDPR).
+Recent research shows that graph-based representations of consent workflows can improve
+system transparency and support formal reasoning about user interactions and data
+processing. Building on this foundation, we implement and evaluate five
+graph-based algorithms in this thesis:
+(A1) Remove First Edge,
+(A2) Remove Random Edge,
+(A3) Brute Force,
+(A4) Remove Min Cut,
+and (A5) Remove Min MC~\cite{DBLP:conf/edbt/FilipczukG023}.
+
+\medskip
+\medskip
+ \begin{itemize}   
+\item \textbf{A1 — Remove First Edge~\cite{DBLP:conf/edbt/FilipczukG023}.}
+ \medskip
+
+
+The algorithm examines all paths that are reachable from a start node \(s\) to a target outcome \(t\). 
+For each such path, it selects the very first edge (the edge adjacent to \(s\)) and includes it in a cut set. 
+After deduplicating this collection of “first edges”, the algorithm removes them from the graph. 
+This simple, deterministic baseline prunes as early as possible in order to observe the resulting effects on reachability.
+
+\medskip
+
+% --- A1: RemoveFirstEdge (algorithm2e) ---
+\begin{algorithm}[H]
+\caption{RemoveFirstEdge}\label{alg:remove-first-edge}
+\SetAlgoLined
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{GetAllEdgePaths}{getAllEdgePaths}
+\SetKwFunction{GetFirstEdge}{getFirstEdge}
+\SetKwFunction{HasEdge}{hasEdge}
+\SetKwFunction{UpdateDependencies}{updateDependencies}
+\SetKwFunction{RemoveEdge}{removeEdge}
+
+\Input{A graph $G$ and a set of constraints $\mathcal{N}$.}
+\Output{A graph $G$.}
+
+\ForAll{$(s,t)\in\mathcal{N}$}{
+  \ForAll{$path \in \GetAllEdgePaths(G,s,t)$}{
+    $e \leftarrow \GetFirstEdge(path)$\;
+    \If{\HasEdge($G,e$)}{
+      \UpdateDependencies{$G,e$}\;
+      \RemoveEdge{$G,e$}\;
+    }
+  }
+}
+\end{algorithm}
+
+
+
+\paragraph*{Example.}
+Suppose there are two parallel routes from \(s\) to \(t\): \(s\!\to\!a\!\to\!t\) and \(s\!\to\!b\!\to\!t\).
+A1 selects the first edge of each route, namely \((s,a)\) and \((s,b)\). Removing these two edges disconnects
+\(s\) from \(t\). This shows that concentrating cuts near the source can be quite aggressive.
+\medskip
+\end{itemize}
+
+ 
+   \medskip 
+
+   \begin{itemize}
+   \item \textbf
+    {A2 —Remove Random Edge~\cite{DBLP:conf/edbt/FilipczukG023}.}
+\medskip
+
+
+The algorithm considers all edges that lie on currently reachable paths from the start node \(s\) to the target outcome \(t\). 
+From this set, it randomly selects one edge, removes it, and updates the graph accordingly. 
+This process is repeated multiple times, producing a set of removed edges and the resulting pruned graph. 
+Since edge selection is random, different runs of the algorithm may yield different outcomes.
+\medskip
+  
+% --- A2: RemoveRandomEdge (algorithm2e) ---
+\begin{algorithm}[H]
+\caption{RemoveRandomEdge}\label{alg:remove-random-edge}
+\SetAlgoLined
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{GetAllEdgePaths}{getAllEdgePaths}
+\SetKwFunction{GetRandomInteger}{getRandomInteger}
+\SetKwFunction{HasEdge}{hasEdge}
+\SetKwFunction{UpdateDependencies}{updateDependencies}
+\SetKwFunction{RemoveEdge}{removeEdge}
+
+\Input{A graph $G$ and a set of constraints $\mathcal{N}$.}
+\Output{A graph $G$.}
+
+\ForAll{$(s,t)\in\mathcal{N}$}{
+  \ForAll{$p \in \GetAllEdgePaths(G,s,t)$}{
+    $edgeIndex \leftarrow \GetRandomInteger(1,\lvert p\rvert)$\;
+    $e \leftarrow p[edgeIndex]$\;
+    \If{\HasEdge($G,e$)}{
+      \UpdateDependencies{$G,e$}\;
+      \RemoveEdge{$G,e$}\;
+    }
+  }
+}
+\end{algorithm}
+
+
+
+\paragraph*{Example.}
+Consider a tiny graph with edges \(s\!\to\!a\!\to\!c\!\to\!t\) and a shortcut \(s\!\to\!c\).
+Algorithm~A2 first collects edges that lie on at least one \(s\!\to\!t\) path and then removes one at random.
+If it removes the shortcut \(s\!\to\!c\), only the longer route \(s\!\to\!a\!\to\!c\!\to\!t\) remains (no disconnection,
+but no shortcut). If it removes \(a\!\to\!c\), reachability from \(s\) to \(t\) is broken. This shows that A2 is a
+stochastic stress test: outcomes vary across runs and may either shorten detours or disconnect paths.
+\end{itemize}
+
+ 
+\medskip
+
+\begin{itemize} 
+\item \textbf%{Brute\_Force:}
+{A3 —Brute Force~\cite{DBLP:conf/edbt/FilipczukG023}.}
+
+%{What it computes.}
+\medskip
+This approach exhaustively explores edge-removal subsets in increasing cardinality. 
+For each candidate set of edges, the edges are removed and the required property is tested (e.g., that the start node \(s\) can still reach the target \(t\) for all mandated start\(\rightarrow\)outcome pairs). 
+The algorithm returns the smallest candidate that satisfies the constraint, or the best-found solution within a practical search cap when exhaustive enumeration is infeasible. 
+Overall, the algorithm enumerates edge-removal candidates, evaluates reachability, and identifies the minimal pruning that maintains the required connectivity.
+\medskip
+
+% --- A3: BruteForce (algorithm2e) ---
+% --- A3: BruteForce (matches your screenshot) ---
+\begin{algorithm}[H]
+\caption{BruteForce}\label{alg:bruteforce}
+\SetAlgoLined
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{GetAllEdgePaths}{getAllEdgePaths}
+\SetKwFunction{CartesianProduct}{cartesianProduct}
+\SetKwFunction{HasEdge}{hasEdge}
+\SetKwFunction{UpdateDependencies}{updateDependencies}
+\SetKwFunction{RemoveEdge}{removeEdge}
+\SetKwFunction{Utility}{U}
+
+\Input{A graph $G=(V,E)$ and a set of constraints $\mathcal{N}$.}
+\Output{A graph $G^\ast$.}
+
+$\mathcal{A} \gets \varnothing$\;
+\ForAll{$(s,t)\in\mathcal{N}$}{
+  $\mathcal{A} \gets \mathcal{A} \cup \GetAllEdgePaths(G,s,t)$\;
+}
+$multicuts \gets \CartesianProduct(\mathcal{A})$\;
+$maxUtility \gets 0$\;
+$G^\ast \gets G$\;
+
+\ForAll{$multicut \in multicuts$}{
+  $G' \gets G$\;
+  $\pi',\,p \gets \varnothing,\,\varnothing$\;
+  \ForAll{$e \in E$}{
+    $\pi'(e) \gets \pi(e)$\;
+    % If you aggregate path-weights per edge, keep this line; otherwise remove/modify:
+    $p(e) \gets \sum_{\text{p } \in r(v)} w_p$\;
+  }
+  \ForAll{$e \in multicut$}{
+    \If{\HasEdge($G',e$)}{
+      \UpdateDependencies{$G',e$ ,$\pi',p$}\;
+      \RemoveEdge{$G',e$}\;
+    }
+  }
+  $utility \gets \Utility(G')$\;
+  \If{$utility > maxUtility$}{
+    $maxUtility \gets utility$\;
+    $G^\ast \gets G'$\;
+  }
+}
+\Return{$G^\ast$}\;
+\end{algorithm}
+
+
+%\paragraph{Determinism.}
+%Yes, under fixed candidate order.  
+%\paragraph{Complexity.}
+%$\sum_{i=1}^{k_{\max}}\binom{|C|}{i}$ connectivity checks; feasible for small $k_{\max}$.
+\paragraph*{Example.}
+Consider two parallel routes from \(s\) to \(t\): \(s\!\to\!a\!\to\!t\) and \(s\!\to\!b\!\to\!t\),
+plus a cross-edge \(a\!\to\!b\).
+A3 checks all small removal sets. With single-edge removals, removing \((s,a)\) keeps the
+route \(s\!\to\!b\!\to\!t\) intact; removing \((s,b)\) keeps \(s\!\to\!a\!\to\!t\) intact; removing
+\((a,b)\) changes nothing essential. Since either \((s,a)\) or \((s,b)\) alone removes the redundancy
+while preserving at least one \(s\!\to\!t\) path, A3 returns a size-1 solution as the minimal pruning.
+\end{itemize}
+
+
+
+\vspace*{\baselineskip}
+
+\begin{itemize}
+\item\textbf
+{A4 — Remove Min Cuts~\cite{DBLP:conf/edbt/FilipczukG023}.}
+\medskip
+%{What it computes.}
+
+This algorithm models pruning as a cut problem between a start node \(s\) and a target node \(t\). 
+It computes a minimum cut, defined as the smallest set of edges whose removal disconnects \(s\) from \(t\); 
+in the weighted variant, the cut corresponds to the set of edges with the lowest total weight. 
+Conceptually, the algorithm identifies the ``cheapest bottleneck'' that simultaneously blocks all \(s \rightarrow t\) routes, 
+rather than pruning edges individually along each path.
+\medskip
+
+
+
+
+
+
+% --- A4: RemoveMinCuts (algorithm2e) ---
+\begin{algorithm}[H]
+\caption{RemoveMinCuts}\label{alg:remove-mincuts}
+\SetAlgoLined
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{MinCut}{MinCut}
+\SetKwFunction{HasEdge}{hasEdge}
+\SetKwFunction{UpdateDependencies}{updateDependencies}
+\SetKwFunction{RemoveEdge}{removeEdge}
+
+\Input{A graph $G=(V,E)$ and a set of constraints $\mathcal{N}$.}
+\Output{A graph $G$.}
+
+$w \gets \varnothing$\;
+\ForAll{$e \in E$}{
+  $w(e) \gets \pi(e)\,\sum_{p \in r(v)} w_p$\;
+}
+\ForAll{$(s,t) \in \mathcal{N}$}{
+  \ForAll{$e \in \MinCut(G,w,s,t)$}{
+    \If{\HasEdge($G,e$)}{
+      \UpdateDependencies{$G,e$}\;
+      \RemoveEdge{$G,e$}\;
+    }
+  }
+}
+\end{algorithm}
+
+  
+%\paragraph{Complexity.}
+%Per pair: one max-flow; total $\mathcal{O}(|\mathcal{P}|\,\mathrm{MaxFlow})$.
+ \paragraph*{Example.}
+Suppose there are two parallel routes from \(s\) to \(t\): \(s\!\to\!a\!\to\!t\) and \(s\!\to\!b\!\to\!t\).
+A minimum cut of size 1 is enough: removing either \((s,a)\) \emph{or} \((s,b)\) breaks all
+\(s\!\to\!t\) paths. If edges carried weights (e.g., “cost of removal”), the algorithm would pick
+the cheaper of \((s,a)\) and \((s,b)\). This illustrates how min-cut targets a single bottleneck
+instead of pruning many edges along the routes.
+\end{itemize}
+\vspace*{\baselineskip}
+
+\begin{itemize} 
+\item \textbf{A5 — Remove Min MC~\cite{DBLP:conf/edbt/FilipczukG023}.}
+\medskip
+%{What it computes.}
+
+This algorithm generalizes the minimum-cut approach to handle multiple terminal pairs 
+\(P = \{(s_1, t_1), (s_2, t_2), \ldots\}\) that must be separated simultaneously. 
+At each iteration, it examines all edges that still lie on at least one currently reachable 
+\(s_i \rightarrow t_i\) path, selects the edge with the highest aggregate impact 
+(e.g., one that intersects many of these paths while preserving required connections), 
+removes it, updates the graph, and repeats this process until all specified pairs 
+are disconnected or a defined removal budget is reached. 
+The output is the set of removed edges that collectively sever the targeted connections 
+across multiple pairs, serving as a greedy approximation to the multicut problem.
+
+\begin{algorithm}[H]
+\caption{RemoveMinMC}\label{alg:remove-minmc}
+\SetAlgoLined
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{MinMC}{MinMC}
+\SetKwFunction{HasEdge}{hasEdge}
+\SetKwFunction{UpdateDependencies}{updateDependencies}
+\SetKwFunction{RemoveEdge}{removeEdge}
+
+\Input{A graph $G=(V,E)$, a set of constraints $\mathcal{N}$.}
+\Output{A graph $G$.}
+
+$w \gets \varnothing$ \;
+\ForAll{$e \in E$}{
+  $w(e) \gets \pi(e)\,\sum_{p \in r(v)} w_p$ \;
+}
+$multicut \gets \MinMC(G,\mathcal{N},w)$ \;
+\ForAll{$e \in multicut$}{
+  \If{\HasEdge($G,e$)}{
+    \UpdateDependencies{$G,e$} \;
+    \RemoveEdge{$G,e$} \;
+  }
+}
+\end{algorithm}
+
+
+
+\paragraph*{Example.}
+Suppose we need to separate two pairs, \((s,t)\) and \((s,u)\).
+There are two routes to each target:
+\(s\!\to\!a\!\to\!t\) and \(s\!\to\!b\!\to\!t\),
+and
+\(s\!\to\!a\!\to\!u\) and \(s\!\to\!c\!\to\!u\).
+The edge \(s\!\to\!a\) lies on both \(s\!\to\!t\) and \(s\!\to\!u\) paths, so the first greedy step
+removes \((s,a)\) because it hits two pairs at once. After that, only
+\(s\!\to\!b\!\to\!t\) and \(s\!\to\!c\!\to\!u\) remain, and the two pairs are already separated.
+This shows how the greedy multicut prefers shared upstream edges that eliminate several overlaps
+with a single removal.
+
+\end{itemize}
+\medskip
+Each algorithm applies a distinct strategy to optimize or constrain user paths through the consent interface, as discussed in detail in subsequent chapters. Graph theory thus offers a formal and flexible framework for modeling consent flows, where each node represents a user state and each edge corresponds to a specific action or choice. By leveraging graph-based algorithms such as path elimination and cut reduction, this thesis aims to streamline user interactions, reduce cognitive load, and enhance fairness and usability in consent management systems.
+
+
+
+
+
+\\
+
+
+
+\paragraph{Scope.}
+Our focus is the UI-layer consent flow and its structural properties.
+System-wide enforcement beyond the UI is assumed and not audited here;
+analysis of cross-site tracking is out of scope.
+
+\paragraph{Bridge to the model.}Building on these definitions, Chapter~\ref{chapter:methodology} formalizes the consent
+journey as a directed graph, states the simplification problem under privacy
+constraints, and introduces the algorithms, instrumentation, and evaluation
+protocol used in this thesis.
+
+
+
