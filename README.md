@@ -9,7 +9,7 @@ This repository contains artefacts and evaluation materials for the Master’s t
 ------------------
 
 
-1.## Overview
+## Overview
 This project explores how graph-based modeling can improve the efficiency and transparency of cookie consent systems.  
 Modern websites often require users to make multiple consent choices (for analytics, personalization, payments, etc.), leading to long and repetitive click paths.  
 To address this, the project represents the consent interaction flow as a **directed graph**, where nodes represent user actions (e.g., “Accept All”, “Open Modal”, “Save Settings”) and edges represent transitions between those actions.
@@ -28,7 +28,7 @@ By combining **graph theory** and **consent management principles**, this work p
 ------------------
 
 
-2.## Architecture
+## Architecture
 The system is organized into three main layers that together form the experimental setup for the graph-based cookie consent evaluation.
 
 ### 2.1 Content and Data Layer — *OpenCms*
@@ -57,7 +57,7 @@ All layers are connected as follows:
 ------------------
 
 
-3. ## Graphs and design variants
+ ## Graphs and design variants
 - **G0**: Baseline CMP flow (banner → modal → toggles → save / accept-all).
 - **G1**: Quick-Consent (inline ‘allow’ prompts).
 - **G1b**: Quick-Consent + auto-apply & implicit first-use.
@@ -65,7 +65,7 @@ All layers are connected as follows:
 ------------------
 
 
-4. ##  Algorithms
+ ##  Algorithms
 The evaluation applies five graph-reduction algorithms originally proposed by Konstantinidis et al.  
 Each algorithm removes selected edges from the consent graph to simulate different strategies for simplifying user journeys while maintaining privacy compliance.
 
@@ -100,7 +100,7 @@ Each algorithm generates three types of artefacts:
 All generated results can be directly visualized using **Graphviz** or analyzed in **Python** notebooks to compare before/after performance across algorithms.
 
 ------------------
-5. ##  Evaluation
+ ##  Evaluation
 The evaluation systematically measures how graph simplifications affect the structure and usability of the consent flow.  
 All experiments are performed on the baseline graph **G₀** and its design variants (**G₁**), using the five algorithms described earlier.
 
@@ -140,7 +140,7 @@ G = nx.drawing.nx_pydot.from_pydot(pd)
 
 
 
-6.## Repository layout
+## Repository layout
 Smart-Paths-Better-Privacy/
 │
 ├── README.md
@@ -187,7 +187,7 @@ Smart-Paths-Better-Privacy/
 
 
 
-7.## License & Credits
+## License & Credits
 
 This repository is part of the Master’s thesis:
 
@@ -195,7 +195,7 @@ This repository is part of the Master’s thesis:
 > Author: **Zoya Asadi**  
 > Supervisor: **Prof. Dr. Stefanie Scherzinger**  
 > University of Passau — Faculty of Informatics and Mathematics  
-> Submission date: **October 2025**
+> Submission date: **November 2025**
 
 ---
 
