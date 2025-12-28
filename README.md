@@ -105,7 +105,7 @@ Existing outputs may be reused for replication.
 Algorithms are executed from:
 
 ```
-Tools/code/Konstantinidis Teams Algorithm/consent-management-in-data-workflows-main/code
+Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code
 ```
 
 ### Generic execution pattern
