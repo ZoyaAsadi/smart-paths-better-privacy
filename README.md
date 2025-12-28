@@ -172,7 +172,7 @@ Smart Path Better Privacy
 │
 ├── Tools/
 │   └── code/
-│       └── Konstantinidis Teams Algorithm/
+│       └── Konstantinidis-team-algorithm/
 │           └── consent-management-in-data-workflows-main/
 │               └── code/
 │
