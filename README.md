@@ -33,7 +33,7 @@ The README focuses on **technical setup, execution, and artefact structure**.
 
 ```bash
 git clone https://github.com/ZoyaAsadi/smart-paths-better-privacy.git
-cd "Smart Path Better Privacy"
+cd smart-paths-better-privacy
 ```
 
 ### Create and activate a virtual environment
@@ -52,6 +52,18 @@ pip install -r requirements.txt
 Graph rendering requires **Graphviz** to be installed on the system.
 
 ---
+### Minimal Reproduction Steps
+
+1. Go to the algorithm folder  
+   `cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code`
+
+2. Run an algorithm on a graph:
+```bash
+python apply_on_dot.py \
+  --graph ../../../artefacts/Graphs/G1/G1.dot \
+  --algorithm remove_first_edge \
+  --output ../../../artefacts/Graphs/G1/G1_remove_first_edge_after.dot
+
 
 ## Project Architecture
 
