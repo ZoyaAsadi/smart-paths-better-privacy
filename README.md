@@ -192,7 +192,7 @@ artefacts/Results/
 ## Repository Layout
 
 ```
-Smart Path Better Privacy
+smart-paths-better-privacy
 │
 ├── artefacts/
 │   ├── Graphs/
@@ -204,7 +204,7 @@ Smart Path Better Privacy
 │
 ├── Tools/
 │   └── code/
-│       └── Konstantinidis-team-algorithm/
+│       └── konstantinidis-team-algorithm/
 │           └── consent-management-in-data-workflows-main/
 │               └── code/
 │
