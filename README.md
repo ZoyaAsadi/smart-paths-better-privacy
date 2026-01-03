@@ -54,20 +54,33 @@ Graph rendering requires **Graphviz** to be installed on the system.
 ---
 ### Minimal Reproduction Steps
 
-1) Go to the algorithm folder
+1) Go to the algorithm folder  
+`cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code`
 
-```bash
-cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code
-```
-
-2) Run an algorithm on a graph
+2) Generic run pattern
 
 ```bash
 python apply_on_dot.py \
+  --graph ../../../artefacts/Graphs/<GRAPH>/<GRAPH>.dot \
+  --algorithm <ALGORITHM_NAME> \
+  --output ../../../artefacts/Graphs/<GRAPH>/<GRAPH>_<ALGORITHM_NAME>_after.dot
+
+<GRAPH> = G0 | G1 | G1b
+
+<ALGORITHM_NAME> =
+  remove_first_edge
+  remove_random_edge
+  remove_min_cut
+  remove_min_mc
+  brute_force
+
+Example run
+python apply_on_dot.py \
   --graph ../../../artefacts/Graphs/G1/G1.dot \
-  --algorithm remove_first_edge \
-  --output ../../../artefacts/Graphs/G1/G1_remove_first_edge_after.dot
+  --algorithm remove_min_cut \
+  --output ../../../artefacts/Graphs/G1/G1_remove_min_cut_after.dot
 ```
+
 ---
 ## Project Architecture
 
