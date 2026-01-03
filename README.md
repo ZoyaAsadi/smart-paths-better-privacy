@@ -54,11 +54,12 @@ Graph rendering requires **Graphviz** to be installed on the system.
 ---
 ### Minimal Reproduction Steps
 
-1) Go to the algorithm folder  
-`cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code`
+1. Go to the algorithm folder  
+```bash
+cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code
+```
 
-2) Generic run pattern
-
+2. Generic run pattern
 ```bash
 python apply_on_dot.py \
   --graph ../../../artefacts/Graphs/<GRAPH>/<GRAPH>.dot \
@@ -73,8 +74,10 @@ python apply_on_dot.py \
   remove_min_cut
   remove_min_mc
   brute_force
+```
 
-Example run
+**Example run**
+```bash
 python apply_on_dot.py \
   --graph ../../../artefacts/Graphs/G1/G1.dot \
   --algorithm remove_min_cut \
