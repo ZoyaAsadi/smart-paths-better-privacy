@@ -13,17 +13,17 @@ The repository is structured to support **reproducibility**: researchers can rer
 
 ## Overview
 
-The project models cookie-consent interactions as **directed graphs**, where nodes represent interface states and user actions (e.g., *Open Modal*, *Accept All*, *Save Settings*), and edges represent transitions between them.  
+The project implements a **Graph-Optimized Cookie Consent Management** model, in which
+cookie-consent interactions are represented as directed graphs. Nodes correspond to
+interface states and user actions (such as *Open Modal*, *Accept All*, or *Save Settings*),
+while edges represent the transitions between these states.
 
-Five **edge-removal algorithms** (adapted from Konstantinidis et al.) are applied to these graphs to study how user click-paths can be simplified while preserving privacy compliance and overall system utility.
+Five edge-removal algorithms (adapted from the approach of Konstantinidis et al.) are
+applied to the graphs in order to observe how the removal of selected edges influences
+user click-paths and the structure of the consent interaction flow.
 
-The evaluation analyses:
-
-- click-cost reduction after graph simplification  
-- preservation / loss of reachable consent paths  
-- usability–privacy trade-offs across design variants and algorithms  
-
-The README focuses on **technical setup, execution, and artefact structure**.
+The evaluation concentrates on measurable effects of these modifications, including
+changes in click effort and path reachability across the different graph variants.
 
 ---
 
@@ -54,20 +54,21 @@ Graph rendering requires **Graphviz** to be installed on the system.
 ---
 ### Minimal Reproduction Steps
 
-Go to the algorithm folder  
+1) Go to the algorithm folder
+
 ```bash
-   cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code
+cd Tools/code/konstantinidis-team-algorithm/consent-management-in-data-workflows-main/code
 ```
-Run an algorithm on a graph:
+
+2) Run an algorithm on a graph
+
 ```bash
 python apply_on_dot.py \
   --graph ../../../artefacts/Graphs/G1/G1.dot \
   --algorithm remove_first_edge \
   --output ../../../artefacts/Graphs/G1/G1_remove_first_edge_after.dot
 ```
-
-
-
+---
 ## Project Architecture
 
 ### Content & Data Layer — OpenCms
