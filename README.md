@@ -1,11 +1,15 @@
 # Smart Paths, Better Privacy  
-**Graph-Optimized Cookie Consent Management**
+**Graph-Optimized Cookie-Based Consent Management**
 
-Zoya Asadi, University of Passau, 2025 — Supervisor: Prof. Dr. Stefanie Scherzinger
+**Author:** Zoya Asadi  
+**Supervisor:** Prof. Dr. Stefanie Scherzinger
+**Advisor:** Prof. Dr. Harald Kosch
+**University:** University of Passau  
+**Year:** 2025
 
 This repository contains the artefacts, scripts, and evaluation materials for the Master’s thesis:
 
-> **Smart Paths, Better Privacy: Graph-Optimized Cookie Consent Management**
+> **Smart Paths, Better Privacy: Graph-Optimized Cookie-Based Consent Management**
 
 The repository is structured to support **reproducibility**: researchers can rerun the algorithms on the consent-graph variants, regenerate outputs, and compare results with the provided evaluation data.
 
@@ -13,7 +17,7 @@ The repository is structured to support **reproducibility**: researchers can rer
 
 ## Overview
 
-The project implements a **Graph-Optimized Cookie Consent Management** model, in which
+The project implements a **Graph-Optimized Cookie-Based Consent Management** model, in which
 cookie-consent interactions are represented as directed graphs. Nodes correspond to
 interface states and user actions (such as *Open Modal*, *Accept All*, or *Save Settings*),
 while edges represent the transitions between these states.
@@ -108,9 +112,9 @@ python apply_on_dot.py \
 
 ## Graph Variants
 
-- **G0** — Baseline CMP flow  
-- **G1** — Quick-Consent variant  
-- **G1b** — Quick-Consent + auto-apply / implicit first-use  
+- G0 represents the baseline CMP banner–modal flow.
+- G1 introduces inline quick-consent actions to reduce interaction depth.
+- G1b extends G1 with auto-apply behaviour and implicit first-use consent triggers.
 
 ---
 
@@ -187,6 +191,10 @@ Metric files are stored in:
 artefacts/Results/
 ```
 
+Example output files:
+- artefacts/Results/clicks_summary_plus.csv
+- artefacts/Results/G1_remove_min_cut_paths.csv
+
 ---
 
 ## Repository Layout
@@ -230,11 +238,25 @@ Folder names reflect the **actual repository structure**.
 
 This project is released under the **MIT License**.
 
-When citing this work:
+When citing this work, please reference:
 
 > Zoya Asadi, *Smart Paths, Better Privacy: Graph-Optimized Cookie Consent Management*,  
 > Master’s Thesis, University of Passau, 2025.
 
+### BibTeX Citation
+
+If you use this work in academic research, please cite:
+
+```bibtex
+@mastersthesis{Asadi2025SmartPaths,
+  author       = {Zoya Asadi},
+  title        = {Smart Paths, Better Privacy: Graph-Optimized Cookie Consent Management},
+  school       = {University of Passau},
+  year         = {2025},
+  supervisor   = {Prof. Dr. Stefanie Scherzinger},
+  advisor      = {Prof. Dr. Harald Kosch}
+}
+```
 ---
 
 ## Acknowledgements
