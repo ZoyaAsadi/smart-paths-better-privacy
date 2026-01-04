@@ -261,7 +261,8 @@ If you use this work in academic research, please cite:
 
 ## Acknowledgements
 
-- Prof. Dr. Stefanie Scherzinger — supervision  
+- Prof. Dr. Stefanie Scherzinger — supervision
+- Prof. Dr. Harald Kosch — advisor
 - Konstantinidis research group — algorithmic foundations  
 - OpenCms & Klaro communities — CMP platform support  
 - Open-source contributors to NetworkX, Graphviz, and pydot
