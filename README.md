@@ -156,7 +156,7 @@ python apply_on_dot.py \
 Where:
 
 - `<GRAPH> ∈ {G0, G1, G1b}`
-- `<ALGORITHM_NAME> ∈ {remove_first_edge, remove_random_edge, remove_min_cut, remove_min_mc, brute_force}`
+- `<ALGORITHM_NAME> ∈ {Remove_First_Edge, Remove_Random_Edge, Remove_Min_Cut, Remove_MinMC, Brute_Force}`
 
 ### Example
 
@@ -164,7 +164,7 @@ Where:
 python apply_on_dot.py \
   --graph ../../../artefacts/Graphs/G0/G0.dot \
   --algorithm remove_min_cut \
-  --output ../../../artefacts/Graphs/G0/G0_remove_min_cut_after.dot
+  --output ../../../artefacts/Graphs/G0/G0-Remove-MinCut.dot
 ```
 
 Parameters:
